@@ -27,11 +27,11 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin'){
           <thead>
             <tr>
               <th>Menu</th>
-              <th>Full</th>
-              <th>Create</th>
-              <th>Read</th>
-              <th>Update</th>
-              <th>Delete</th>
+              <th class="text-center"><div class="form-check"><input id="selectAllFull" class="form-check-input" type="checkbox"><label class="form-check-label ms-1">Full</label></div></th>
+              <th class="text-center"><div class="form-check"><input id="selectAllCreate" class="form-check-input" type="checkbox"><label class="form-check-label ms-1">Create</label></div></th>
+              <th class="text-center"><div class="form-check"><input id="selectAllRead" class="form-check-input" type="checkbox"><label class="form-check-label ms-1">Read</label></div></th>
+              <th class="text-center"><div class="form-check"><input id="selectAllUpdate" class="form-check-input" type="checkbox"><label class="form-check-label ms-1">Update</label></div></th>
+              <th class="text-center"><div class="form-check"><input id="selectAllDelete" class="form-check-input" type="checkbox"><label class="form-check-label ms-1">Delete</label></div></th>
             </tr>
           </thead>
           <tbody>
@@ -102,7 +102,32 @@ $(function(){
     var row = $(this).closest('tr');
     var checked = $(this).prop('checked');
     row.find('.createToggle, .readToggle, .updateToggle, .deleteToggle').prop('checked', checked);
+    updateHeaderState();
   });
+
+  // header select-all handlers
+  $('#selectAllFull').on('change', function(){ $('#accessTable tbody .fullToggle').prop('checked', this.checked).trigger('change'); });
+  $('#selectAllCreate').on('change', function(){ $('#accessTable tbody .createToggle').prop('checked', this.checked); updateHeaderState(); });
+  $('#selectAllRead').on('change', function(){ $('#accessTable tbody .readToggle').prop('checked', this.checked); updateHeaderState(); });
+  $('#selectAllUpdate').on('change', function(){ $('#accessTable tbody .updateToggle').prop('checked', this.checked); updateHeaderState(); });
+  $('#selectAllDelete').on('change', function(){ $('#accessTable tbody .deleteToggle').prop('checked', this.checked); updateHeaderState(); });
+
+  // Update header checkbox states (checked/indeterminate) based on row checkboxes
+  function updateHeaderState(){
+    function updateFor(selector, headerId){
+      var $all = $('#accessTable tbody '+selector);
+      if(!$all.length) { $('#'+headerId).prop('checked', false).prop('indeterminate', false); return; }
+      var total = $all.length;
+      var checked = $all.filter(':checked').length;
+      $('#'+headerId).prop('checked', checked === total);
+      $('#'+headerId).prop('indeterminate', checked > 0 && checked < total);
+    }
+    updateFor('.fullToggle', 'selectAllFull');
+    updateFor('.createToggle', 'selectAllCreate');
+    updateFor('.readToggle', 'selectAllRead');
+    updateFor('.updateToggle', 'selectAllUpdate');
+    updateFor('.deleteToggle', 'selectAllDelete');
+  }
 
   $('#loadAccessBtn').click(function(){
     var uid = $('#accessUserSelect').val();
@@ -147,6 +172,12 @@ $(function(){
   $(document).on('change', '#accessUserSelect', function(){
     var v = $(this).val();
     if(v) loadAccessForUser(v);
+  });
+
+  // after menus loaded, ensure header state is reset
+  $(document).ajaxStop(function(){
+    // update header states when any ajax completes (simple approach)
+    updateHeaderState();
   });
 
 });

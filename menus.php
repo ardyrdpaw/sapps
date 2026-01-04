@@ -69,7 +69,7 @@ $(function(){
         rows += '<td>'+m.label+'</td>';
         rows += '<td>'+m.menu_key+'</td>';
         rows += '<td>'+m.sort_order+'</td>';
-        rows += '<td><button class="btn btn-sm btn-warning editMenuBtn" data-id="'+m.id+'">Edit</button> <button class="btn btn-sm btn-danger deleteMenuBtn" data-id="'+m.id+'">Delete</button></td>';
+        rows += '<td><button class="btn btn-sm btn-secondary upMenuBtn" data-id="'+m.id+'" title="Move up">↑</button> <button class="btn btn-sm btn-secondary downMenuBtn" data-id="'+m.id+'" title="Move down">↓</button> <button class="btn btn-sm btn-warning editMenuBtn" data-id="'+m.id+'">Edit</button> <button class="btn btn-sm btn-danger deleteMenuBtn" data-id="'+m.id+'">Delete</button></td>';
         rows += '</tr>';
       });
       $('#menusTable tbody').html(rows);
@@ -104,6 +104,38 @@ $(function(){
     $.post('php/menus_api.php?action=delete', {id: id}, function(resp){
       if(resp.success) { showCrudAlert('Deleted', 'success'); loadMenus(); }
       else showCrudAlert(resp.error || 'Failed', 'danger');
+    }, 'json');
+  });
+
+  // move up/down handlers
+  $(document).on('click', '.upMenuBtn', function(){
+    var id = $(this).data('id');
+    var row = $('#menusTable tbody tr[data-id="'+id+'"]');
+    var prev = row.prev('tr');
+    if(!prev.length) return;
+    var id2 = prev.data('id');
+    var sort1 = parseInt(row.find('td').eq(2).text(),10) || 0;
+    var sort2 = parseInt(prev.find('td').eq(2).text(),10) || 0;
+    var label1 = row.find('td').eq(0).text();
+    var label2 = prev.find('td').eq(0).text();
+    // swap sorts
+    $.post('php/menus_api.php?action=edit', {id: id, label: label1, sort_order: sort2}, function(){
+      $.post('php/menus_api.php?action=edit', {id: id2, label: label2, sort_order: sort1}, function(){ loadMenus(); });
+    }, 'json');
+  });
+  $(document).on('click', '.downMenuBtn', function(){
+    var id = $(this).data('id');
+    var row = $('#menusTable tbody tr[data-id="'+id+'"]');
+    var next = row.next('tr');
+    if(!next.length) return;
+    var id2 = next.data('id');
+    var sort1 = parseInt(row.find('td').eq(2).text(),10) || 0;
+    var sort2 = parseInt(next.find('td').eq(2).text(),10) || 0;
+    var label1 = row.find('td').eq(0).text();
+    var label2 = next.find('td').eq(0).text();
+    // swap sorts
+    $.post('php/menus_api.php?action=edit', {id: id, label: label1, sort_order: sort2}, function(){
+      $.post('php/menus_api.php?action=edit', {id: id2, label: label2, sort_order: sort1}, function(){ loadMenus(); });
     }, 'json');
   });
 

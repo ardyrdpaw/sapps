@@ -1,7 +1,11 @@
 <?php
 include 'db_connect.php';
+session_start();
 $action = $_GET['action'] ?? '';
 header('Content-Type: application/json');
+
+// admin check helper
+$isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 
 // Default menus (used to seed DB if empty)
 $DEFAULT_MENUS = [
@@ -65,6 +69,12 @@ switch ($action) {
         $user_id = intval($_GET['user_id'] ?? 0);
         $rows = [];
         if ($user_id > 0) {
+            // allow admins to list any user; non-admins can only list their own access
+            if (!$isAdmin && (!isset($_SESSION['user_id']) || intval($_SESSION['user_id']) !== $user_id)) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Forbidden']);
+                break;
+            }
             $res = $conn->query("SELECT menu_key, `full`, can_create, can_read, can_update, can_delete FROM user_access WHERE user_id=".intval($user_id));
             if ($res) {
                 while ($r = $res->fetch_assoc()) {
@@ -81,6 +91,12 @@ switch ($action) {
         echo json_encode(['data' => $rows]);
         break;
     case 'set':
+        // only admins may set permissions
+        if (!$isAdmin) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Forbidden']);
+            break;
+        }
         $input = json_decode(file_get_contents('php://input'), true);
         // Support form POST fallback
         if (!$input) {

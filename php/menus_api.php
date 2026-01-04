@@ -1,7 +1,17 @@
 <?php
 include 'db_connect.php';
+session_start();
 $action = $_GET['action'] ?? '';
 header('Content-Type: application/json');
+
+// simple admin check
+$isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+// protect write operations
+if (in_array($action, ['add','edit','delete']) && !$isAdmin) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Forbidden']);
+    exit;
+}
 
 switch ($action) {
     case 'list':
