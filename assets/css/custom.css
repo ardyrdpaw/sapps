@@ -1,0 +1,71 @@
+/* Custom styles for Support Apps BKPSDM */
+:root{
+  --primary:#0b6b8a;
+  --primary-dark:#0f77a6;
+  --muted:#6c757d;
+}
+html,body{font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:#f4f6fb; color:#1b2b3a;}
+.topbar{background:#fff;}
+.topbar .brand strong{font-weight:700; color:var(--primary-dark);}
+.sidebar{min-height:100vh; background:#2f3942 !important; color:#fff; transition:all .18s ease}
+.sidebar .sidebar-inner{padding-top:1rem}
+.sidebar .nav-item{margin-bottom:0.45rem}
+.sidebar .nav-link{color:rgba(255,255,255,0.95); padding:0.6rem 0.9rem; display:flex; align-items:center; font-size:1.03rem; letter-spacing:0.2px}
+.sidebar .nav-link i{margin-right:10px; font-size:1.08rem; vertical-align:-0.125rem}
+.sidebar .nav-link:hover{background:rgba(255,255,255,0.04); color:#fff}
+.sidebar .nav-link.active{background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); color:#fff; border-left:4px solid var(--primary); padding-left:0.65rem; font-weight:700; box-shadow: inset 4px 0 0 rgba(255,255,255,0.03);}
+.sidebar .nav-link.active i{color:#fff; transform:translateX(-2px);}
+.sidebar .nav-link.active::after{content:''; display:block; height:36px; width:4px; background:linear-gradient(180deg,var(--primary),var(--primary-dark)); position:absolute; left:0; top:50%; transform:translateY(-50%); border-radius:2px}
+@media (min-width:768px){
+  /* Compact sidebar for col-md-2 layout */
+  .sidebar .sidebar-inner{padding:0.5rem}
+  .sidebar .nav-link{padding:0.5rem 0.6rem; font-size:1.02rem}
+  .sidebar .nav-link i{margin-right:8px; font-size:0.98rem}
+  .sidebar .nav-link .badge{font-size:0.72rem; padding:0.28em 0.4em}
+  .brand img{height:28px; width:auto}
+  /* Sidebar widths and flex layout: expanded max and collapsed width (toggle with JS) */
+  /* Use flex layout at md+ so we can enforce exact widths */
+  .container-fluid > .row{display:flex; align-items:stretch; gap:0}
+  #sidebarMenu{flex:0 0 250px !important; max-width:250px !important}
+  main{flex:1 1 auto !important}
+  /* main content padding to align with sidebar width */
+  main{padding-left:1rem; padding-right:1rem}
+  /* when sidebar is collapsed (icon-only) reduce left padding to keep content visually aligned */
+  .sidebar-collapsed main{padding-left:0.5rem; padding-right:0.75rem}
+  .sidebar-collapsed #sidebarMenu, .sidebar-collapsed .sidebar{flex:0 0 72px !important; max-width:72px !important}
+  .sidebar-collapsed main{flex:1 1 auto !important}
+  .sidebar-collapsed .sidebar-inner{padding:0.5rem; text-align:center}
+  .sidebar-collapsed .sidebar .nav-link{justify-content:center; padding:0.45rem 0}
+  .sidebar-collapsed .sidebar .nav-link .menu-label{display:none}
+  .sidebar-collapsed .brand .brand-label{display:none}
+  .sidebar-collapsed .sidebar .nav-link i{font-size:1.1rem; margin-right:0}
+  .sidebar-collapsed .sidebar .nav-link.active::after{left:auto; right:6px; transform:none; height:28px}
+  .sidebar-collapsed .sidebar .sidebar-inner h5{display:none}
+}
+main{padding-top:24px}
+.container-fluid.p-0{padding-left:12px; padding-right:12px}
+/* reduce left margin specifically for page wrapper next to topbar */
+.topbar + .container-fluid{padding-left:8px; padding-right:12px}
+/* nudge sidebar inward slightly */
+#sidebarMenu{padding-left:4px}
+/* make inner sidebar content align closer to the left */
+.sidebar .sidebar-inner{padding-left:0.4rem}
+
+/* Hero / header card */
+.site-hero{background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; padding:28px; border-radius:14px; box-shadow:0 20px 40px rgba(13,50,70,0.12);}
+.site-hero h1{font-weight:700; font-size:32px}
+.site-hero p{opacity:0.95}
+.site-hero .tags{margin-top:14px}
+.site-hero .tag{display:inline-block; padding:6px 12px; border-radius:20px; background:rgba(255,255,255,0.08); color:#fff; margin-right:8px; font-size:0.9rem}
+/* footer */
+.app-footer{background:#fff; border-top:1px solid #e9eef6; padding:10px 20px; color:var(--muted); display:flex; align-items:center; justify-content:space-between}
+/* saview specific */
+.saview-clock{position:absolute; right:16px; bottom:8px; color:#fff; font-weight:700; font-size:1rem; z-index:5; text-shadow:0 1px 2px rgba(0,0,0,0.4); display:flex; align-items:center; gap:8px}
+.saview-clock svg{width:18px; height:18px; fill:#fff}
+/* small helpers */
+.card.rounded-lg{border-radius:14px}
+.btn-pill{border-radius:28px}
+
+/* Admin: hide footer clock format controls (toggleable) */
+#clockControls{display:none !important}
+
