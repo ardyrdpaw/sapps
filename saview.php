@@ -11,8 +11,11 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body style="margin: 0; padding: 0;">
+<body style="margin: 0; padding: 0; overflow-x: hidden;">
 <style>
+html, body { height: 100%; margin: 0; padding: 0; overflow-x: hidden; }
+.signage-container { min-height: 100vh; display: flex; flex-direction: column; }
+.signage-content-row { flex: 1; display: flex; }
 .signage-header { background: #1a5490; color: #fff; min-height: 90px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: relative; }
 .signage-header-logo { display: flex; align-items: center; }
 .signage-header-center { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
@@ -203,7 +206,7 @@ if (class_exists('IntlDateFormatter')) {
   }
 }
 ?>
-<div class="container-fluid p-0">
+<div class="container-fluid p-0 signage-container">
   <!-- Header with Logo, Welcome 1, and Clock -->
   <div class="row g-0">
     <div class="col-12 signage-header">
@@ -225,7 +228,7 @@ if (class_exists('IntlDateFormatter')) {
       </div>
     </div>
   </div>
-  <div class="row g-0">
+  <div class="row g-0 signage-content-row">
     <div class="col-md-8 signage-main">
       <?php if (count($videoPlaylist) > 0): ?>
         <div class="signage-video-wrap">
