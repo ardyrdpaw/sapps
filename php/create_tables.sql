@@ -1,6 +1,6 @@
 -- Create tables for Support Apps BKPSDM
-CREATE DATABASE IF NOT EXISTS support_apps_bkpsdm;
-USE support_apps_bkpsdm;
+CREATE DATABASE IF NOT EXISTS sapps;
+USE sapps;
 
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
