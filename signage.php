@@ -12,6 +12,7 @@
         <div class="card-body">
             <div class="mb-3">
                 <button class="btn btn-success" id="addActivityBtn">Add Activity</button>
+                <a class="btn btn-outline-primary ms-2" id="previewSignageBtn" href="saview.php" target="_blank" rel="noopener noreferrer" title="Open signage viewer in a new tab"><i class="bi bi-eye"></i> Preview</a>
             </div>
             <ul class="nav nav-tabs mb-3" id="activityTabs" role="tablist">
                 <li class="nav-item" role="presentation"><button class="nav-link active" data-actcat="Kegiatan" type="button">Kegiatan</button></li>

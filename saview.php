@@ -8,8 +8,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signage View - Support Apps BKPSDM</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables Bootstrap 5 CSS -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 </head>
 <body style="margin: 0; padding: 0; overflow-x: hidden;">
 <style>
@@ -221,9 +226,6 @@ if (class_exists('IntlDateFormatter')) {
         <b><?= isset($signage['Welcome 1']) ? $signage['Welcome 1']['content'] : 'Welcome 1' ?></b>
       </div>
       <div class="signage-header-clock">
-        <span class="signage-clock-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" focusable="false" aria-hidden="true"><path d="M12 1a11 11 0 1 0 .001 22.001A11 11 0 0 0 12 1zm0 2a9 9 0 1 1 0 18 9 9 0 0 1 0-18zm.5 4h-1v6l5 3 .5-.86-4.5-2.64V7z"/></svg>
-        </span>
         <span id="saviewClock"><?= htmlspecialchars($nowStr) ?></span>
       </div>
     </div>
@@ -251,13 +253,13 @@ if (class_exists('IntlDateFormatter')) {
     <div class="col-md-4 signage-side p-3">
       <div class="signage-table mb-3">
         <div class="fw-bold text-center mb-2">Kegiatan</div>
-        <table class="table table-sm mb-2 activity-table">
+        <table class="table table-sm mb-2 activity-table display" id="kegiatanTable">
           <thead><tr><th style="width:30px;">No</th><th>Kegiatan</th><th>Tempat</th><th>Waktu</th><th>Status</th></tr></thead>
           <tbody>
             <?php if (count($kegiatanActivities) > 0): ?>
               <?php foreach ($kegiatanActivities as $activity): ?>
                 <tr>
-                  <td><?= htmlspecialchars($activity['no']) ?></td>
+                  <td></td>
                   <td><?= htmlspecialchars($activity['kegiatan']) ?></td>
                   <td><?= htmlspecialchars($activity['tempat']) ?></td>
                   <td><?= htmlspecialchars($activity['waktu']) ?></td>
@@ -272,13 +274,13 @@ if (class_exists('IntlDateFormatter')) {
       </div>
       <div class="signage-table mb-3">
         <div class="fw-bold text-center mb-2">Agenda</div>
-        <table class="table table-sm mb-2 activity-table">
+        <table class="table table-sm mb-2 activity-table display" id="agendaTable">
           <thead><tr><th style="width:30px;">No</th><th>Kegiatan</th><th>Tempat</th><th>Waktu</th><th>Status</th></tr></thead>
           <tbody>
             <?php if (count($agendaActivities) > 0): ?>
               <?php foreach ($agendaActivities as $activity): ?>
                 <tr>
-                  <td><?= htmlspecialchars($activity['no']) ?></td>
+                  <td></td>
                   <td><?= htmlspecialchars($activity['kegiatan']) ?></td>
                   <td><?= htmlspecialchars($activity['tempat']) ?></td>
                   <td><?= htmlspecialchars($activity['waktu']) ?></td>
@@ -500,4 +502,47 @@ if (class_exists('IntlDateFormatter')) {
 })();
 </script>
 </body>
+<script>
+$(function() {
+  // DataTables for both tables, auto-number No column
+  $("#kegiatanTable, #agendaTable").DataTable({
+    paging: false,
+    searching: false,
+    info: false,
+    ordering: false, // disable all sorting
+    scrollY: "calc(5 * 34px)", // 5 rows, each ~34px high (adjust if needed)
+    scrollCollapse: true,
+    responsive: true,
+    language: {
+      emptyTable: "Tidak ada data",
+      zeroRecords: "Tidak ditemukan",
+      info: "",
+      infoEmpty: "",
+      infoFiltered: "",
+    },
+    columnDefs: [
+      { targets: 0, width: "30px" },
+      { targets: '_all', orderable: false }
+    ],
+    drawCallback: function(settings) {
+      var api = this.api();
+      var rowCount = api.rows({page:'current'}).count();
+      var minRows = 6;
+      if(rowCount < minRows) {
+        var colCount = api.columns().count();
+        for(var i=rowCount; i<minRows; i++) {
+          var emptyCells = '';
+          for(var j=0;j<colCount;j++) emptyCells += '<td>&nbsp;</td>';
+          $(api.table().body()).append('<tr class="dt-empty-row">'+emptyCells+'</tr>');
+        }
+      }
+      $(api.table().container()).find('table').addClass('table-striped table-hover align-middle');
+    },
+    rowCallback: function(row, data, index) {
+      // Set No column to row number (1-based)
+      $('td:eq(0)', row).html(index + 1);
+    }
+  });
+});
+</script>
 </html>
