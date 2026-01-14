@@ -81,6 +81,65 @@ switch ($action) {
         }
         echo json_encode(['data' => $items]);
         break;
+    case 'list_templates':
+        $res = $conn->query("SELECT id, name, created_at, updated_at FROM signage_templates ORDER BY id ASC");
+        $rows = [];
+        if ($res) { while ($r = $res->fetch_assoc()) $rows[] = $r; }
+        echo json_encode(['success'=>true, 'templates'=>$rows]);
+        break;
+    case 'save_template':
+        // Save current signage layout as a template with provided name
+        $name = $conn->real_escape_string(trim($_POST['name'] ?? 'Untitled'));
+        // gather current signage items and settings
+        $itemsRes = $conn->query("SELECT id, name, content, type, category, autoplay, `loop`, muted, sort_order FROM signage_items ORDER BY sort_order ASC, id ASC");
+        $items = [];
+        if ($itemsRes) {
+            while ($r = $itemsRes->fetch_assoc()) {
+                $items[] = $r;
+            }
+        }
+        $payload = ['items'=>$items];
+        // save
+        $json = $conn->real_escape_string(json_encode($payload));
+        $ok = $conn->query("INSERT INTO signage_templates (name, content) VALUES ('$name', '$json')");
+        if ($ok) echo json_encode(['success'=>true, 'id'=>$conn->insert_id]); else echo json_encode(['success'=>false,'error'=>$conn->error]);
+        break;
+    case 'get_template':
+        $id = intval($_GET['id'] ?? 0);
+        $res = $conn->query("SELECT id, name, content, created_at, updated_at FROM signage_templates WHERE id=$id");
+        $row = $res ? $res->fetch_assoc() : null;
+        echo json_encode(['success'=>true, 'template'=>$row]);
+        break;
+    case 'apply_template':
+        $id = intval($_POST['id'] ?? 0);
+        $res = $conn->query("SELECT content FROM signage_templates WHERE id=$id");
+        if (!$res || $res->num_rows === 0) { echo json_encode(['success'=>false,'msg'=>'Template not found']); break; }
+        $row = $res->fetch_assoc();
+        $payload = json_decode($row['content'], true);
+        if (!is_array($payload) || !isset($payload['items'])) { echo json_encode(['success'=>false,'msg'=>'Invalid template content']); break; }
+        // Apply template: remove existing non-setting items (type != 'Setting') and insert items from template
+        $conn->query("DELETE FROM signage_items WHERE type != 'Setting'");
+        $stmt = $conn->prepare("INSERT INTO signage_items (name, content, type, category, autoplay, `loop`, muted, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        foreach ($payload['items'] as $it) {
+            $name = $conn->real_escape_string($it['name'] ?? '');
+            $content = $conn->real_escape_string($it['content'] ?? '');
+            $type = $conn->real_escape_string($it['type'] ?? '');
+            $category = $conn->real_escape_string($it['category'] ?? '');
+            $autoplay = intval($it['autoplay'] ?? 0);
+            $loop = intval($it['loop'] ?? 0);
+            $muted = intval($it['muted'] ?? 0);
+            $sort_order = intval($it['sort_order'] ?? 0);
+            $stmt->bind_param('ssssiiii', $name, $content, $type, $category, $autoplay, $loop, $muted, $sort_order);
+            $stmt->execute();
+        }
+        $stmt->close();
+        echo json_encode(['success'=>true]);
+        break;
+    case 'delete_template':
+        $id = intval($_POST['id'] ?? 0);
+        $conn->query("DELETE FROM signage_templates WHERE id=$id");
+        echo json_encode(['success'=>true]);
+        break;
     case 'get':
         $id = intval($_GET['id'] ?? 0);
         $result = $conn->query("SELECT id, name, content, type, category, autoplay, `loop`, muted, sort_order FROM signage_items WHERE id=$id");

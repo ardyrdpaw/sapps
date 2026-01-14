@@ -36,8 +36,17 @@ html, body { height: 100%; margin: 0; padding: 0; overflow-x: hidden; }
 .activity-table thead { background: #0d6efd; color: #fff; }
 .activity-table thead th { padding: 6px 4px; border: none; font-weight: 600; }
 .activity-table tbody td { padding: 6px 4px; border-color: #dee2e6; }
-.activity-table .badge { font-size: 0.7rem; padding: 3px 6px; }
-.signage-gallery { background: #17989e; }
+.activity-table .badge { font-size: 0.7rem; padding: 3px 6px; }  /* Activity wrapper to contain scrollbar and avoid overlap; titles and headers are sticky */
+  .activity-table-wrapper { max-height: 200px; overflow-y: auto; padding-right: 10px; scrollbar-gutter: stable; position: relative; }
+  .activity-table-wrapper table { margin-bottom: 0; }
+  .activity-table-wrapper::-webkit-scrollbar { width: 10px; }
+  .activity-table-wrapper::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); }
+  .activity-table-wrapper::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 6px; }
+  /* Make activity title sticky and centered */
+  .activity-title { position: sticky; top: 0; z-index: 3; background: #fff; color: #0d6efd; padding: 8px 0; margin: 0; font-weight: 700; font-size: 1.05rem; text-align: center; }
+  /* Sticky table header positioned below the title */
+  .activity-table-wrapper .activity-table thead th { position: sticky; top: 44px; z-index: 2; background: #0d6efd; color: #fff; }
+  .activity-table-wrapper .activity-table thead th { padding-top: 6px; padding-bottom: 6px; }.signage-gallery { background: #17989e; }
 .signage-gallery-img { background: transparent; min-height: 170px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #fff; overflow: hidden; position: relative; }
 .signage-gallery-img img { width: 100%; height: 100%; object-fit: contain; }
 .signage-slideshow { position: relative; }
@@ -252,11 +261,12 @@ if (class_exists('IntlDateFormatter')) {
     </div>
     <div class="col-md-4 signage-side p-3">
       <div class="signage-table mb-3">
-        <div class="fw-bold text-center mb-2">Kegiatan</div>
-        <table class="table table-sm mb-2 activity-table display" id="kegiatanTable">
-          <thead><tr><th style="width:30px;">No</th><th>Kegiatan</th><th>Tempat</th><th>Waktu</th><th>Status</th></tr></thead>
-          <tbody>
-            <?php if (count($kegiatanActivities) > 0): ?>
+        <div class="activity-table-wrapper">
+          <div class="fw-bold activity-title">Kegiatan</div>
+          <table class="table table-sm mb-2 activity-table display" id="kegiatanTable">
+            <thead><tr><th style="width:30px;">No</th><th>Kegiatan</th><th>Tempat</th><th>Waktu</th><th>Status</th></tr></thead>
+            <tbody>
+              <?php if (count($kegiatanActivities) > 0): ?>
               <?php foreach ($kegiatanActivities as $activity): ?>
                 <tr>
                   <td></td>
@@ -273,11 +283,12 @@ if (class_exists('IntlDateFormatter')) {
         </table>
       </div>
       <div class="signage-table mb-3">
-        <div class="fw-bold text-center mb-2">Agenda</div>
-        <table class="table table-sm mb-2 activity-table display" id="agendaTable">
-          <thead><tr><th style="width:30px;">No</th><th>Kegiatan</th><th>Tempat</th><th>Waktu</th><th>Status</th></tr></thead>
-          <tbody>
-            <?php if (count($agendaActivities) > 0): ?>
+        <div class="activity-table-wrapper">
+          <div class="fw-bold activity-title">Agenda</div>
+          <table class="table table-sm mb-2 activity-table display" id="agendaTable">
+            <thead><tr><th style="width:30px;">No</th><th>Kegiatan</th><th>Tempat</th><th>Waktu</th><th>Status</th></tr></thead>
+            <tbody>
+              <?php if (count($agendaActivities) > 0): ?>
               <?php foreach ($agendaActivities as $activity): ?>
                 <tr>
                   <td></td>
@@ -292,6 +303,7 @@ if (class_exists('IntlDateFormatter')) {
             <?php endif; ?>
           </tbody>
         </table>
+        </div>
       </div>
       <div class="row signage-gallery">
         <div class="col-6">
@@ -510,8 +522,6 @@ $(function() {
     searching: false,
     info: false,
     ordering: false, // disable all sorting
-    scrollY: "calc(5 * 34px)", // 5 rows, each ~34px high (adjust if needed)
-    scrollCollapse: true,
     responsive: true,
     language: {
       emptyTable: "Tidak ada data",

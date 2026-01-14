@@ -1,0 +1,92 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cmd /c \"mysql -u root -p -D sapps < migrations\\\\migrate_add_kode_to_inf_ti_items\\.sql\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c \"mysql -u root -D sapps -e \"SELECT id, kode, category, name FROM inf_ti_items ORDER BY id LIMIT 50;\"\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SELECT id,kode,category,name FROM inf_ti_items ORDER BY id LIMIT 50;\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SHOW TABLE STATUS LIKE 'inf_ti_items'\\\\G\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SHOW CREATE TABLE inf_ti_items\\\\G\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c \"mysql -u root -D sapps < migrations\\\\fix_inf_ti_autoincrement\\.sql\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SELECT id,kode,category,name FROM inf_ti_items WHERE category IN \\('printer','jaringan'\\) ORDER BY id;\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c \"mysql -u root -D sapps < migrations\\\\migrate_rename_printer_to_support\\.sql\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SELECT id,kode,category,name FROM inf_ti_items WHERE category IN \\('support','printer'\\) ORDER BY id;\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c \"mysql -u root -D sapps < migrations\\\\migrate_normalize_kode\\.sql\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SELECT kode, COUNT\\(\\*\\) AS c, GROUP_CONCAT\\(id ORDER BY id\\) AS ids FROM inf_ti_items GROUP BY kode HAVING c>1; SELECT id,kode FROM inf_ti_items WHERE kode IS NULL OR kode='';\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SELECT kode, COUNT\\(\\*\\) AS c, GROUP_CONCAT\\(id ORDER BY id\\) AS ids FROM inf_ti_items GROUP BY kode HAVING c>1;\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SELECT COUNT\\(\\*\\) AS dup_groups FROM \\(SELECT kode FROM inf_ti_items GROUP BY kode HAVING COUNT\\(\\*\\)>1\\) t;\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SELECT COUNT\\(\\*\\) AS empty_kode FROM inf_ti_items WHERE kode IS NULL OR kode='';\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"source migrations/migrate_add_unique_kode_to_inf_ti_items\\.sql\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SHOW INDEX FROM inf_ti_items WHERE Key_name = 'uniq_inf_ti_items_kode';\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SELECT id,kode FROM inf_ti_items ORDER BY id LIMIT 5;\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c curl -s \"http://localhost/sapps/php/inf_ti_api\\.php\\?action=check_kode&kode=KOM-0001\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c curl -s \"http://localhost/sapps/php/inf_ti_api\\.php\\?action=check_kode\\^&kode=KOM-0001\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"source migrations/migrate_normalize_kode_prefixes\\.sql\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c mysql -u root -D sapps -e \"SELECT id,kode FROM inf_ti_items ORDER BY id LIMIT 10;\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c curl -I \"https://api\\.qrserver\\.com/v1/create-qr-code/\\?size=120x120&data=http://localhost/sapps/inf_ti_detail\\.php\\?kode=COM0001\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

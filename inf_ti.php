@@ -26,10 +26,16 @@
             <div class="me-2 dropdown">
               <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="exportColsDropdown" data-bs-toggle="dropdown" aria-expanded="false">Export Columns</button>
               <ul class="dropdown-menu p-3" aria-labelledby="exportColsDropdown" style="min-width:240px;">
-                <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="id" checked> <span class="form-check-label">ID</span></label></li>
+                <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="kode" checked> <span class="form-check-label">Kode</span></label></li>
+                <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="id"> <span class="form-check-label">ID</span></label></li>
                 <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="category" checked> <span class="form-check-label">Category</span></label></li>
                 <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="name" checked> <span class="form-check-label">Name</span></label></li>
                 <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="detail" checked> <span class="form-check-label">Detail</span></label></li>
+                <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="tipe"> <span class="form-check-label">Tipe</span></label></li>
+                <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="sn"> <span class="form-check-label">SN</span></label></li>
+                <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="tahun"> <span class="form-check-label">Pengadaan Tahun</span></label></li>
+                <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="kondisi"> <span class="form-check-label">Kondisi</span></label></li>
+                <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="lokasi"> <span class="form-check-label">Lokasi</span></label></li>
                 <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="created_at" checked> <span class="form-check-label">Created At</span></label></li>
                 <li><label class="form-check"><input class="form-check-input export-col" type="checkbox" value="updated_at" checked> <span class="form-check-label">Updated At</span></label></li>
                 <li class="pt-2"><button id="btnSelectAllCols" class="btn btn-sm btn-outline-secondary me-2">All</button><button id="btnDeselectAllCols" class="btn btn-sm btn-outline-secondary">None</button></li>
@@ -47,7 +53,7 @@
           <!-- Tabs -->
           <ul class="nav nav-tabs" id="infTiTabs" role="tablist">
             <li class="nav-item" role="presentation"><button class="nav-link active" id="tab-komputer-tab" data-bs-toggle="tab" data-bs-target="#tab-komputer" type="button" role="tab" aria-controls="tab-komputer" aria-selected="true">Komputer</button></li>
-            <li class="nav-item" role="presentation"><button class="nav-link" id="tab-printer-tab" data-bs-toggle="tab" data-bs-target="#tab-printer" type="button" role="tab" aria-controls="tab-printer" aria-selected="false">Printer</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="tab-support-tab" data-bs-toggle="tab" data-bs-target="#tab-support" type="button" role="tab" aria-controls="tab-support" aria-selected="false">Support</button></li>
             <li class="nav-item" role="presentation"><button class="nav-link" id="tab-jaringan-tab" data-bs-toggle="tab" data-bs-target="#tab-jaringan" type="button" role="tab" aria-controls="tab-jaringan" aria-selected="false">Jaringan</button></li>
           </ul>
           <div class="tab-content mt-3">
@@ -61,25 +67,75 @@
               <?php endif; ?>
               <table class="table table-sm table-striped" id="tblKomputer">
                 <thead>
-                  <tr><th><input type="checkbox" id="chkAllKomputer"></th><th></th><th>#</th><th>Nama</th><th>Spesifikasi</th><th>Actions</th></tr>
-                  <tr class="dt-filters"><th></th><th></th><th></th><th><input class="form-control form-control-sm filter-name" placeholder="Filter Nama"></th><th><input class="form-control form-control-sm filter-detail" placeholder="Filter Spesifikasi"></th><th></th></tr>
+                  <tr>
+                    <th><input type="checkbox" id="chkAllKomputer"></th>
+                    <th></th>
+                    <th>Kode</th>
+                    <th>Tipe</th>
+                    <th>Merk</th>
+                    <th>Spesifikasi</th>
+                    <th>SN</th>
+                    <th>Pengadaan Tahun</th>
+                    <th>Kondisi</th>
+                    <th>Lokasi</th>
+                    <th>Tanggal Update</th>
+                    <th>Actions</th>
+                  </tr>
+                  <tr class="dt-filters">
+                    <th></th><th></th>
+                    <th><input class="form-control form-control-sm filter-kode" placeholder="Kode"></th>
+                    <th><input class="form-control form-control-sm filter-tipe" placeholder="Tipe"></th>
+                    <th><input class="form-control form-control-sm filter-merk" placeholder="Merk"></th>
+                    <th><input class="form-control form-control-sm filter-spesifikasi" placeholder="Spesifikasi"></th>
+                    <th><input class="form-control form-control-sm filter-sn" placeholder="SN"></th>
+                    <th><input class="form-control form-control-sm filter-tahun" placeholder="Tahun"></th>
+                    <th><input class="form-control form-control-sm filter-kondisi" placeholder="Kondisi"></th>
+                    <th><input class="form-control form-control-sm filter-lokasi" placeholder="Lokasi"></th>
+                    <th><input class="form-control form-control-sm filter-tgl" placeholder="Tanggal"></th>
+                    <th></th>
+                  </tr>
                 </thead>
                 <tbody>
                 </tbody>
               </table>
             </div>
-            <div class="tab-pane fade" id="tab-printer" role="tabpanel" aria-labelledby="tab-printer-tab">
+            <div class="tab-pane fade" id="tab-support" role="tabpanel" aria-labelledby="tab-support-tab">
 
               <?php if ($isAdmin): ?>
                 <div class="d-inline-flex align-items-center mb-2">
-                  <button id="addPrinter" class="btn btn-sm btn-primary me-2">Add Printer</button>
-                  <button id="saveOrderPrinter" class="btn btn-sm btn-outline-primary" disabled>Save Order</button>
+                  <button id="addSupport" class="btn btn-sm btn-primary me-2">Add Support</button>
+                  <button id="saveOrderSupport" class="btn btn-sm btn-outline-primary" disabled>Save Order</button>
                 </div>
               <?php endif; ?>
-              <table class="table table-sm table-striped" id="tblPrinter">
+              <table class="table table-sm table-striped" id="tblSupport">
                 <thead>
-                  <tr><th><input type="checkbox" id="chkAllPrinter"></th><th></th><th>#</th><th>Nama</th><th>Model</th><th>Actions</th></tr>
-                  <tr class="dt-filters"><th></th><th></th><th></th><th><input class="form-control form-control-sm filter-name" placeholder="Filter Nama"></th><th><input class="form-control form-control-sm filter-detail" placeholder="Filter Model"></th><th></th></tr>
+                  <tr>
+                    <th><input type="checkbox" id="chkAllSupport"></th>
+                    <th></th>
+                    <th>Kode</th>
+                    <th>Tipe</th>
+                    <th>Merk</th>
+                    <th>Spesifikasi</th>
+                    <th>SN</th>
+                    <th>Pengadaan Tahun</th>
+                    <th>Kondisi</th>
+                    <th>Lokasi</th>
+                    <th>Tanggal Update</th>
+                    <th>Actions</th>
+                  </tr>
+                  <tr class="dt-filters">
+                    <th></th><th></th>
+                    <th><input class="form-control form-control-sm filter-kode" placeholder="Kode"></th>
+                    <th><input class="form-control form-control-sm filter-tipe" placeholder="Tipe"></th>
+                    <th><input class="form-control form-control-sm filter-merk" placeholder="Merk"></th>
+                    <th><input class="form-control form-control-sm filter-spesifikasi" placeholder="Spesifikasi"></th>
+                    <th><input class="form-control form-control-sm filter-sn" placeholder="SN"></th>
+                    <th><input class="form-control form-control-sm filter-tahun" placeholder="Tahun"></th>
+                    <th><input class="form-control form-control-sm filter-kondisi" placeholder="Kondisi"></th>
+                    <th><input class="form-control form-control-sm filter-lokasi" placeholder="Lokasi"></th>
+                    <th><input class="form-control form-control-sm filter-tgl" placeholder="Tanggal"></th>
+                    <th></th>
+                  </tr>
                 </thead>
                 <tbody>
                 </tbody>
@@ -95,8 +151,33 @@
               <?php endif; ?>
               <table class="table table-sm table-striped" id="tblJaringan">
                 <thead>
-                  <tr><th><input type="checkbox" id="chkAllJaringan"></th><th></th><th>#</th><th>Nama</th><th>Lokasi</th><th>Actions</th></tr>
-                  <tr class="dt-filters"><th></th><th></th><th></th><th><input class="form-control form-control-sm filter-name" placeholder="Filter Nama"></th><th><input class="form-control form-control-sm filter-detail" placeholder="Filter Lokasi"></th><th></th></tr>
+                  <tr>
+                    <th><input type="checkbox" id="chkAllJaringan"></th>
+                    <th></th>
+                    <th>Kode</th>
+                    <th>Tipe</th>
+                    <th>Merk</th>
+                    <th>Spesifikasi</th>
+                    <th>SN</th>
+                    <th>Pengadaan Tahun</th>
+                    <th>Kondisi</th>
+                    <th>Lokasi</th>
+                    <th>Tanggal Update</th>
+                    <th>Actions</th>
+                  </tr>
+                  <tr class="dt-filters">
+                    <th></th><th></th>
+                    <th><input class="form-control form-control-sm filter-kode" placeholder="Kode"></th>
+                    <th><input class="form-control form-control-sm filter-tipe" placeholder="Tipe"></th>
+                    <th><input class="form-control form-control-sm filter-merk" placeholder="Merk"></th>
+                    <th><input class="form-control form-control-sm filter-spesifikasi" placeholder="Spesifikasi"></th>
+                    <th><input class="form-control form-control-sm filter-sn" placeholder="SN"></th>
+                    <th><input class="form-control form-control-sm filter-tahun" placeholder="Tahun"></th>
+                    <th><input class="form-control form-control-sm filter-kondisi" placeholder="Kondisi"></th>
+                    <th><input class="form-control form-control-sm filter-lokasi" placeholder="Lokasi"></th>
+                    <th><input class="form-control form-control-sm filter-tgl" placeholder="Tanggal"></th>
+                    <th></th>
+                  </tr>
                 </thead>
                 <tbody>
                 </tbody>
@@ -120,16 +201,43 @@
       <div class="modal-body">
         <div id="infAlert" class="alert alert-danger d-none" role="alert" aria-live="polite"></div>
         <form id="infTiForm" novalidate>
+                    <div class="mb-3" id="kodeGroup">
+                      <label class="form-label">Kode</label>
+                      <input class="form-control" id="inf_kode" name="kode" placeholder="e.g. COM0001">
+                      <div class="invalid-feedback" id="kodeFeedback">Kode already exists or invalid.</div>
+                    </div>
           <input type="hidden" name="id" id="inf_id" value="">
           <input type="hidden" name="category" id="inf_category" value="">
           <div class="mb-3">
-            <label class="form-label">Nama</label>
-            <input class="form-control" id="inf_name" name="name" required aria-required="true">
-            <div class="invalid-feedback">Nama is required.</div>
+            <label class="form-label">Tipe</label>
+            <select class="form-select" id="inf_tipe" name="tipe">
+            </select>
+            <div class="invalid-feedback" id="tipeFeedback">Invalid tipe for selected category.</div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Detail</label>
-            <textarea class="form-control" id="inf_detail" name="detail" rows="3"></textarea>
+            <label class="form-label">Merk</label>
+            <input class="form-control" id="inf_name" name="name" required aria-required="true">
+            <div class="invalid-feedback">Merk is required.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Spesifikasi</label>
+            <textarea class="form-control" id="inf_detail" name="detail" rows="2"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">SN</label>
+            <input class="form-control" id="inf_sn" name="sn">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Pengadaan Tahun</label>
+            <input class="form-control" id="inf_tahun" name="tahun">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Kondisi</label>
+            <input class="form-control" id="inf_kondisi" name="kondisi">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Lokasi</label>
+            <input class="form-control" id="inf_lokasi" name="lokasi">
           </div>
         </form>
       </div>
@@ -151,24 +259,31 @@ $(function(){
   let currentCategory = null;
   let editingId = null;
 
+  // tipe options per category
+  const tipeOptions = {
+    komputer: ['PC','Laptop'],
+    support: ['Printer','Scanner','Lainnya'],
+    jaringan: ['Router','Hub','Adapter','Lainnya']
+  };
+
   // DataTable instances
-  let dtKomputer = null, dtPrinter = null, dtJaringan = null;
+let dtKomputer = null, dtSupport = null, dtJaringan = null;
 
   function initDataTables(){
     dtKomputer = $('#tblKomputer').DataTable({
       paging: true, pageLength: 10, lengthChange: false, searching: true, autoWidth: false, responsive: true,
       columnDefs: [
-        { orderable: false, targets: [0,1,2,5] },
+        { orderable: false, targets: [0,1,11] },
         { width: '36px', targets: 1 },
         { width: '40px', targets: 2 },
         { className: 'text-center', targets: [0,1,2] }
       ],
       order: []
     });
-    dtPrinter = $('#tblPrinter').DataTable({
+    dtSupport = $('#tblSupport').DataTable({
       paging: true, pageLength: 10, lengthChange: false, searching: true, autoWidth: false, responsive: true,
       columnDefs: [
-        { orderable: false, targets: [0,1,2,5] },
+        { orderable: false, targets: [0,1,11] },
         { width: '36px', targets: 1 },
         { width: '40px', targets: 2 },
         { className: 'text-center', targets: [0,1,2] }
@@ -178,7 +293,7 @@ $(function(){
     dtJaringan = $('#tblJaringan').DataTable({
       paging: true, pageLength: 10, lengthChange: false, searching: true, autoWidth: false, responsive: true,
       columnDefs: [
-        { orderable: false, targets: [0,1,2,5] },
+        { orderable: false, targets: [0,1,11] },
         { width: '36px', targets: 1 },
         { width: '40px', targets: 2 },
         { className: 'text-center', targets: [0,1,2] }
@@ -188,33 +303,39 @@ $(function(){
   }
 
   function refresh() {
-    ['komputer','printer','jaringan'].forEach(cat => {
+    ['komputer','support','jaringan'].forEach(cat => {
       $.get(api, {action: 'list', category: cat}, function(resp){
         if (!resp.success) return;
         const rows = [];
         resp.items.forEach((it, idx) => {
           const chk = '<input type="checkbox" class="row-chk" data-id="' + it.id + '">';
           const drag = '<div class="text-center drag-handle" style="width:36px; cursor:grab"><i class="bi bi-list"></i></div>';
-          const num = (idx+1);
-          const name = escapeHtml(it.name);
-          const detail = escapeHtml(it.detail);
+          const kode = escapeHtml(it.kode || '');
+          const tipe = escapeHtml(it.tipe || it.category);
+          const merk = escapeHtml(it.name);
+          const spesifikasi = escapeHtml(it.detail);
+          const sn = escapeHtml(it.sn || '');
+          const tahun = escapeHtml(it.tahun || '');
+          const kondisi = escapeHtml(it.kondisi || '');
+          const lokasi = escapeHtml(it.lokasi || '');
+          const tgl = escapeHtml(it.updated_at || '');
           const actions = actionButtons(it.id);
-          rows.push([chk, drag, num, name, detail, actions, it.id]); // include id as extra hidden col for mapping
+          rows.push([chk, drag, kode, tipe, merk, spesifikasi, sn, tahun, kondisi, lokasi, tgl, actions, it.id]);
         });
 
         // update DataTable
         let table, dt;
         if (cat === 'komputer') { dt = dtKomputer; table = '#tblKomputer'; }
-        if (cat === 'printer') { dt = dtPrinter; table = '#tblPrinter'; }
+        if (cat === 'support') { dt = dtSupport; table = '#tblSupport'; }
         if (cat === 'jaringan') { dt = dtJaringan; table = '#tblJaringan'; }
         if (!dt) return;
         dt.clear();
-        rows.forEach(r => dt.row.add(r.slice(0,6)) );
+        rows.forEach(r => dt.row.add(r.slice(0,12)) );
         dt.draw(false);
         // set data-id and draggable on rows in DOM to support drag
         const nodes = $(table + ' tbody tr');
         nodes.each(function(i){
-          const id = rows[i][6];
+          const id = rows[i][rows[i].length - 1];
           $(this).attr('data-id', id).attr('draggable', true);
           // ensure checkbox has correct data-id (DataTables may clone)
           $(this).find('.row-chk').attr('data-id', id);
@@ -224,9 +345,13 @@ $(function(){
   }
 
   function actionButtons(id) {
-    if (!INF_TI_IS_ADMIN) return '<span class="text-muted">No actions</span>';
-    return '<button class="btn btn-sm btn-secondary btn-edit me-1" data-id="' + id + '">Edit</button>' +
-           '<button class="btn btn-sm btn-danger btn-delete" data-id="' + id + '">Delete</button>';
+    let btns = '';
+    btns += '<a class="btn btn-sm btn-info btn-detail me-1" href="inf_ti_detail.php?id=' + id + '">Detail</a>';
+    if (INF_TI_IS_ADMIN) {
+      btns += '<button class="btn btn-sm btn-secondary btn-edit me-1" data-id="' + id + '">Edit</button>';
+      btns += '<button class="btn btn-sm btn-danger btn-delete" data-id="' + id + '">Delete</button>';
+    }
+    return btns;
   }
 
   function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -235,15 +360,30 @@ $(function(){
   // open modal for add
   $('#addJaringan').on('click', function(){ openModal('jaringan'); });
   $('#addKomputer').on('click', function(){ openModal('komputer'); });
-  $('#addPrinter').on('click', function(){ openModal('printer'); });
+  $('#addSupport').on('click', function(){ openModal('support'); });
 
   function openModal(category, item){
+    // Kode is manually editable for all categories
+    $('#kodeGroup label').text('Kode');
+    $('#inf_kode').prop('readonly', false);
+    $('#inf_kode').val(item ? (item.kode || '') : '');
     currentCategory = category;
     editingId = item ? item.id : null;
     $('#inf_category').val(category);
     $('#inf_id').val(editingId || '');
+
+    // populate tipe select based on category
+    const opts = tipeOptions[category] || [];
+    $('#inf_tipe').empty();
+    opts.forEach(function(o){ $('#inf_tipe').append(new Option(o, o)); });
+    if (item && item.tipe) $('#inf_tipe').val(item.tipe); else if (opts.length) $('#inf_tipe').val(opts[0]); else $('#inf_tipe').val('');
+
     $('#inf_name').val(item ? item.name : '');
     $('#inf_detail').val(item ? item.detail : '');
+    $('#inf_sn').val(item ? item.sn : '');
+    $('#inf_tahun').val(item ? item.tahun : '');
+    $('#inf_kondisi').val(item ? item.kondisi : '');
+    $('#inf_lokasi').val(item ? item.lokasi : '');
     $('#infTiModalLabel').text(editingId ? 'Edit Item' : 'Add Item');
     // reset validation state
     $('#infAlert').addClass('d-none').text('');
@@ -282,22 +422,74 @@ $(function(){
     $('#infSaveSpinner').removeClass('d-none');
     $('#infSave').prop('disabled', true);
     const url = api + '?action=' + (id ? 'edit' : 'add');
-    const data = id ? {id: id, name: name, detail: detail} : {category: cat, name: name, detail: detail};
-    $.post(url, data, function(resp){
+    const kode = $('#inf_kode').val().trim();
+    const tipe = $('#inf_tipe').val() || '';
+    const sn = $('#inf_sn').val().trim();
+    const tahun = $('#inf_tahun').val().trim();
+    const kondisi = $('#inf_kondisi').val().trim();
+    const lokasi = $('#inf_lokasi').val().trim();
+    let data;
+    if (id) {
+      data = {id: id, kode: kode, tipe: tipe, name: name, detail: detail, sn: sn, tahun: tahun, kondisi: kondisi, lokasi: lokasi};
+    } else {
+      data = {category: cat, kode: kode, tipe: tipe, name: name, detail: detail, sn: sn, tahun: tahun, kondisi: kondisi, lokasi: lokasi};
+    }
+
+    function doPost(){
+      $.post(url, data, function(resp){
+        $('#infSaveSpinner').addClass('d-none');
+        if (resp.success) {
+          modal.hide();
+          refresh();
+          showToast(id ? 'Item updated' : 'Item added');
+        } else {
+          $('#infAlert').removeClass('d-none').text(resp.msg || 'Error');
+          if (resp.msg && resp.msg.toLowerCase().includes('kode')) { $('#inf_kode').addClass('is-invalid'); $('#kodeFeedback').text(resp.msg); }
+        }
+      }, 'json').fail(function(){
+        $('#infSaveSpinner').addClass('d-none');
+        $('#infAlert').removeClass('d-none').text('Network error');
+      }).always(function(){
+        $('#infSave').prop('disabled', !INF_TI_IS_ADMIN || !$('#inf_name').val().trim());
+      });
+    }
+
+    // validate tipe client-side
+    const allowed = tipeOptions[cat] || [];
+    if (tipe && allowed.indexOf(tipe) === -1) {
       $('#infSaveSpinner').addClass('d-none');
-      if (resp.success) {
-        modal.hide();
-        refresh();
-        showToast(id ? 'Item updated' : 'Item added');
-      } else {
-        $('#infAlert').removeClass('d-none').text(resp.msg || 'Error');
-      }
-    }, 'json').fail(function(){
-      $('#infSaveSpinner').addClass('d-none');
-      $('#infAlert').removeClass('d-none').text('Network error');
-    }).always(function(){
-      $('#infSave').prop('disabled', !INF_TI_IS_ADMIN || !$('#inf_name').val().trim());
-    });
+      $('#inf_tipe').addClass('is-invalid');
+      $('#tipeFeedback').text('Invalid tipe for selected category');
+      $('#infSave').prop('disabled', false);
+      return;
+    } else {
+      $('#inf_tipe').removeClass('is-invalid');
+      $('#tipeFeedback').text('');
+    }
+
+    // if kode provided, check uniqueness first
+    if (kode) {
+      $.get(api, {action: 'check_kode', kode: kode, id: id || ''}, function(resp){
+        if (!resp.success || resp.exists) {
+          $('#infSaveSpinner').addClass('d-none');
+          $('#inf_kode').addClass('is-invalid');
+          $('#kodeFeedback').text(resp.msg || 'Kode already exists');
+          $('#infSave').prop('disabled', false);
+          return;
+        }
+        $('#inf_kode').removeClass('is-invalid');
+        $('#kodeFeedback').text('');
+        doPost();
+      }, 'json').fail(function(){
+        $('#infSaveSpinner').addClass('d-none');
+        $('#infAlert').removeClass('d-none').text('Network error');
+        $('#infSave').prop('disabled', false);
+      });
+    } else {
+      $('#inf_kode').removeClass('is-invalid');
+      $('#kodeFeedback').text('');
+      doPost();
+    }
   });
 
   // edit/delete handlers
@@ -325,18 +517,44 @@ $(function(){
 
   // header checkboxes
   $('#chkAllKomputer').on('change', function(){ $('#tblKomputer tbody .row-chk').prop('checked', $(this).prop('checked')); });
-  $('#chkAllPrinter').on('change', function(){ $('#tblPrinter tbody .row-chk').prop('checked', $(this).prop('checked')); });
+  $('#chkAllSupport').on('change', function(){ $('#tblSupport tbody .row-chk').prop('checked', $(this).prop('checked')); });
   $('#chkAllJaringan').on('change', function(){ $('#tblJaringan tbody .row-chk').prop('checked', $(this).prop('checked')); });
 
   // initialize DataTables after DOM ready
   initDataTables();
   // wire column filters to DataTables
-  $('#tblKomputer thead .filter-name').on('input', function(){ dtKomputer.column(3).search(this.value).draw(); });
-  $('#tblKomputer thead .filter-detail').on('input', function(){ dtKomputer.column(4).search(this.value).draw(); });
-  $('#tblPrinter thead .filter-name').on('input', function(){ dtPrinter.column(3).search(this.value).draw(); });
-  $('#tblPrinter thead .filter-detail').on('input', function(){ dtPrinter.column(4).search(this.value).draw(); });
-  $('#tblJaringan thead .filter-name').on('input', function(){ dtJaringan.column(3).search(this.value).draw(); });
-  $('#tblJaringan thead .filter-detail').on('input', function(){ dtJaringan.column(4).search(this.value).draw(); });
+  // Komputer filters
+  $('#tblKomputer thead .filter-kode').on('input', function(){ dtKomputer.column(2).search(this.value).draw(); });
+  $('#tblKomputer thead .filter-tipe').on('input', function(){ dtKomputer.column(3).search(this.value).draw(); });
+  $('#tblKomputer thead .filter-merk').on('input', function(){ dtKomputer.column(4).search(this.value).draw(); });
+  $('#tblKomputer thead .filter-spesifikasi').on('input', function(){ dtKomputer.column(5).search(this.value).draw(); });
+  $('#tblKomputer thead .filter-sn').on('input', function(){ dtKomputer.column(6).search(this.value).draw(); });
+  $('#tblKomputer thead .filter-tahun').on('input', function(){ dtKomputer.column(7).search(this.value).draw(); });
+  $('#tblKomputer thead .filter-kondisi').on('input', function(){ dtKomputer.column(8).search(this.value).draw(); });
+  $('#tblKomputer thead .filter-lokasi').on('input', function(){ dtKomputer.column(9).search(this.value).draw(); });
+  $('#tblKomputer thead .filter-tgl').on('input', function(){ dtKomputer.column(10).search(this.value).draw(); });
+
+  // Support filters
+  $('#tblSupport thead .filter-kode').on('input', function(){ dtSupport.column(2).search(this.value).draw(); });
+  $('#tblSupport thead .filter-tipe').on('input', function(){ dtSupport.column(3).search(this.value).draw(); });
+  $('#tblSupport thead .filter-merk').on('input', function(){ dtSupport.column(4).search(this.value).draw(); });
+  $('#tblSupport thead .filter-spesifikasi').on('input', function(){ dtSupport.column(5).search(this.value).draw(); });
+  $('#tblSupport thead .filter-sn').on('input', function(){ dtSupport.column(6).search(this.value).draw(); });
+  $('#tblSupport thead .filter-tahun').on('input', function(){ dtSupport.column(7).search(this.value).draw(); });
+  $('#tblSupport thead .filter-kondisi').on('input', function(){ dtSupport.column(8).search(this.value).draw(); });
+  $('#tblSupport thead .filter-lokasi').on('input', function(){ dtSupport.column(9).search(this.value).draw(); });
+  $('#tblSupport thead .filter-tgl').on('input', function(){ dtSupport.column(10).search(this.value).draw(); });
+
+  // Jaringan filters
+  $('#tblJaringan thead .filter-kode').on('input', function(){ dtJaringan.column(2).search(this.value).draw(); });
+  $('#tblJaringan thead .filter-tipe').on('input', function(){ dtJaringan.column(3).search(this.value).draw(); });
+  $('#tblJaringan thead .filter-merk').on('input', function(){ dtJaringan.column(4).search(this.value).draw(); });
+  $('#tblJaringan thead .filter-spesifikasi').on('input', function(){ dtJaringan.column(5).search(this.value).draw(); });
+  $('#tblJaringan thead .filter-sn').on('input', function(){ dtJaringan.column(6).search(this.value).draw(); });
+  $('#tblJaringan thead .filter-tahun').on('input', function(){ dtJaringan.column(7).search(this.value).draw(); });
+  $('#tblJaringan thead .filter-kondisi').on('input', function(){ dtJaringan.column(8).search(this.value).draw(); });
+  $('#tblJaringan thead .filter-lokasi').on('input', function(){ dtJaringan.column(9).search(this.value).draw(); });
+  $('#tblJaringan thead .filter-tgl').on('input', function(){ dtJaringan.column(10).search(this.value).draw(); });
 
   // call refresh to populate tables
   refresh();
@@ -346,7 +564,7 @@ $(function(){
     const target = $(e.target).attr('data-bs-target');
     setTimeout(function(){
       if (target === '#tab-komputer' && dtKomputer) { dtKomputer.columns.adjust().draw(); }
-      if (target === '#tab-printer' && dtPrinter) { dtPrinter.columns.adjust().draw(); }
+      if (target === '#tab-support' && dtSupport) { dtSupport.columns.adjust().draw(); }
       if (target === '#tab-jaringan' && dtJaringan) { dtJaringan.columns.adjust().draw(); }
     }, 120);
   });
@@ -354,7 +572,7 @@ $(function(){
   // initial adjust for the active tab (delayed)
   setTimeout(function(){
     if (dtKomputer) { dtKomputer.columns.adjust().draw(); }
-    if (dtPrinter && $('#tab-printer').hasClass('show')) { dtPrinter.columns.adjust().draw(); }
+    if (dtSupport && $('#tab-support').hasClass('show')) { dtSupport.columns.adjust().draw(); }
     if (dtJaringan && $('#tab-jaringan').hasClass('show')) { dtJaringan.columns.adjust().draw(); }
   }, 120);
 
@@ -396,12 +614,12 @@ $(function(){
   }
 
   makeSortable('#tblKomputer tbody', '#saveOrderKomputer');
-  makeSortable('#tblPrinter tbody', '#saveOrderPrinter');
+  makeSortable('#tblSupport tbody', '#saveOrderSupport');
   makeSortable('#tblJaringan tbody', '#saveOrderJaringan');
 
   // Save order handlers
   $('#saveOrderKomputer').on('click', function(){ saveOrder('komputer', '#tblKomputer', this); });
-  $('#saveOrderPrinter').on('click', function(){ saveOrder('printer', '#tblPrinter', this); });
+  $('#saveOrderSupport').on('click', function(){ saveOrder('support', '#tblSupport', this); });
   $('#saveOrderJaringan').on('click', function(){ saveOrder('jaringan', '#tblJaringan', this); });
 
   function saveOrder(category, tableSelector, btn){

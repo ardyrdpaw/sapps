@@ -13,12 +13,18 @@ function inf_api_output($data){
   exit;
 }
 
-// ensure table exists
+// ensure table exists (kolom baru: kode, tipe, sn, tahun, kondisi, lokasi)
 $conn->query("CREATE TABLE IF NOT EXISTS inf_ti_items (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  kode VARCHAR(100) DEFAULT NULL,
   category VARCHAR(32) NOT NULL,
+  tipe VARCHAR(100) DEFAULT NULL,
   name VARCHAR(255) NOT NULL,
   detail TEXT,
+  sn VARCHAR(100) DEFAULT NULL,
+  tahun VARCHAR(10) DEFAULT NULL,
+  kondisi VARCHAR(100) DEFAULT NULL,
+  lokasi VARCHAR(255) DEFAULT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
@@ -38,6 +44,8 @@ if ((int)$row['c'] === 0) {
     $stmt->execute();
   }
   $stmt->close();
+  // ensure kode seeded for existing rows if none
+  $conn->query("UPDATE inf_ti_items SET kode = CONCAT(category,'-',id) WHERE kode IS NULL OR kode = ''");
 } else {
   // If the table contains exactly the original three sample rows, migrate them to the new order
   $sampleNames = ['Switch Lantai 1','PC Ruang Admin','HP LaserJet'];
@@ -58,11 +66,19 @@ if ((int)$row['c'] === 0) {
       $stmt->execute();
     }
     $stmt->close();
+    // ensure kode set for new seeds
+    $conn->query("UPDATE inf_ti_items SET kode = CONCAT(category,'-',id) WHERE kode IS NULL OR kode = ''");
   }
 }
 
 $action = $_REQUEST['action'] ?? 'list';
-$allowedCategories = ['jaringan','komputer','printer'];
+$allowedCategories = ['jaringan','komputer','support'];
+// allowed tipe per category
+$allowedTipes = [
+  'komputer' => ['PC','Laptop'],
+  'support' => ['Printer','Jaringan','Lainnya'],
+  'jaringan' => ['Router','Hub','Adapter','Lainnya']
+];
 $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 
 // Use sort_order for explicit ordering if present
@@ -74,18 +90,19 @@ if ($action === 'list') {
   if ($category && !in_array($category, $allowedCategories)) {
     inf_api_output(['success' => false, 'msg' => 'Invalid category']);
   }
+  $fields = 'id, kode, category, tipe, name, detail, sn, tahun, kondisi, lokasi, created_at, updated_at';
   if ($category) {
     if ($hasSortOrder) {
-      $stmt = $conn->prepare('SELECT id, category, name, detail, created_at, updated_at FROM inf_ti_items WHERE category = ? ORDER BY sort_order ASC, id ASC');
+      $stmt = $conn->prepare("SELECT $fields FROM inf_ti_items WHERE category = ? ORDER BY sort_order ASC, id ASC");
     } else {
-      $stmt = $conn->prepare('SELECT id, category, name, detail, created_at, updated_at FROM inf_ti_items WHERE category = ? ORDER BY id ASC');
+      $stmt = $conn->prepare("SELECT $fields FROM inf_ti_items WHERE category = ? ORDER BY id ASC");
     }
     $stmt->bind_param('s', $category);
   } else {
     if ($hasSortOrder) {
-      $stmt = $conn->prepare('SELECT id, category, name, detail, created_at, updated_at FROM inf_ti_items ORDER BY sort_order ASC, id ASC');
+      $stmt = $conn->prepare("SELECT $fields FROM inf_ti_items ORDER BY sort_order ASC, id ASC");
     } else {
-      $stmt = $conn->prepare('SELECT id, category, name, detail, created_at, updated_at FROM inf_ti_items ORDER BY category, id ASC');
+      $stmt = $conn->prepare("SELECT $fields FROM inf_ti_items ORDER BY category, id ASC");
     }
   }
   $stmt->execute();
@@ -96,6 +113,19 @@ if ($action === 'list') {
   if (!defined('UNIT_TESTING')) exit; 
 }
 
+if ($action === 'check_kode') {
+  $kode = trim($_GET['kode'] ?? '');
+  $id = (int)($_GET['id'] ?? 0);
+  if ($kode === '') inf_api_output(['success' => false, 'msg' => 'Kode empty']);
+  $stmt = $conn->prepare('SELECT id FROM inf_ti_items WHERE kode = ? LIMIT 1');
+  $stmt->bind_param('s', $kode);
+  $stmt->execute();
+  $res = $stmt->get_result();
+  $r = $res->fetch_assoc();
+  if ($r && $r['id'] != $id) inf_api_output(['success' => false, 'exists' => true, 'msg' => 'Kode already exists']);
+  inf_api_output(['success' => true, 'exists' => false]);
+}
+
 if (!$isAdmin) {
   echo json_encode(['success' => false, 'msg' => 'Admin privileges required for this action']);
   if (!defined('UNIT_TESTING')) exit;
@@ -103,46 +133,101 @@ if (!$isAdmin) {
 
 if ($action === 'add') {
   $category = $_POST['category'] ?? '';
+  $kode = trim($_POST['kode'] ?? '');
+  $tipe = trim($_POST['tipe'] ?? '');
   $name = trim($_POST['name'] ?? '');
   $detail = trim($_POST['detail'] ?? '');
+  $sn = trim($_POST['sn'] ?? '');
+  $tahun = trim($_POST['tahun'] ?? '');
+  $kondisi = trim($_POST['kondisi'] ?? '');
+  $lokasi = trim($_POST['lokasi'] ?? '');
   if (!in_array($category, $allowedCategories) || $name === '') {
     echo json_encode(['success' => false, 'msg' => 'Invalid input']);
     if (!defined('UNIT_TESTING')) exit;
   }
+  // validate tipe (if provided) against allowed list for the category; if empty, set default (first allowed)
+  if (!empty($tipe)) {
+    $allowed = $allowedTipes[$category] ?? [];
+    if (!in_array($tipe, $allowed)) { echo json_encode(['success' => false, 'msg' => 'Invalid tipe for category']); if (!defined('UNIT_TESTING')) exit; }
+  } else {
+    $tipe = ($allowedTipes[$category][0] ?? '');
+  }
+  // check duplicate kode if provided
+  if ($kode !== '') {
+    $stmtChk = $conn->prepare('SELECT id FROM inf_ti_items WHERE kode = ? LIMIT 1');
+    $stmtChk->bind_param('s', $kode);
+    $stmtChk->execute();
+    $resChk = $stmtChk->get_result();
+    $rChk = $resChk->fetch_assoc();
+    $stmtChk->close();
+    if ($rChk) { echo json_encode(['success' => false, 'msg' => 'Kode already exists']); if (!defined('UNIT_TESTING')) exit; }
+  }
   // compute next sort_order for the category if column exists
   if ($hasSortOrder) {
-    // compute next sort for category using safe escaping
     $catEsc = $conn->real_escape_string($category);
     $mx = $conn->query("SELECT COALESCE(MAX(sort_order), 0) as m FROM inf_ti_items WHERE category = '" . $catEsc . "'");
     $mrow = $mx->fetch_assoc();
     $nextSort = (int)$mrow['m'] + 1;
-    $stmt = $conn->prepare('INSERT INTO inf_ti_items (category, name, detail, sort_order) VALUES (?, ?, ?, ?)');
-    $stmt->bind_param('sssi', $category, $name, $detail, $nextSort);
+    $stmt = $conn->prepare('INSERT INTO inf_ti_items (kode, category, tipe, name, detail, sn, tahun, kondisi, lokasi, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->bind_param('sssssssssi', $kode, $category, $tipe, $name, $detail, $sn, $tahun, $kondisi, $lokasi, $nextSort);
   } else {
-    $stmt = $conn->prepare('INSERT INTO inf_ti_items (category, name, detail) VALUES (?, ?, ?)');
-    $stmt->bind_param('sss', $category, $name, $detail);
+    $stmt = $conn->prepare('INSERT INTO inf_ti_items (kode, category, tipe, name, detail, sn, tahun, kondisi, lokasi) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->bind_param('sssssssss', $kode, $category, $tipe, $name, $detail, $sn, $tahun, $kondisi, $lokasi);
   }
   $ok = $stmt->execute();
+  if (!$ok) {
+    if ($conn->errno == 1062) { echo json_encode(['success' => false, 'msg' => 'Kode already exists']); if (!defined('UNIT_TESTING')) exit; }
+  }
   $id = $conn->insert_id;
   $stmt->close();
+  if (empty($kode)) {
+    // New prefix rules: komputer -> COM, support -> SUP, jaringan -> NET (format: PREFIX + zero-padded 4 digits, e.g. COM0001)
+    $prefix = ($category === 'komputer') ? 'COM' : (($category === 'support') ? 'SUP' : (($category === 'jaringan') ? 'NET' : strtoupper(substr($category,0,3))));
+    $genKode = $prefix . str_pad($id, 4, '0', STR_PAD_LEFT);
+    $conn->query("UPDATE inf_ti_items SET kode = '" . $conn->real_escape_string($genKode) . "' WHERE id = " . intval($id));
+  }
   echo json_encode(['success' => (bool)$ok, 'id' => $id]);
-  if (!defined('UNIT_TESTING')) exit; 
+  if (!defined('UNIT_TESTING')) exit;
 }
 
 if ($action === 'edit') {
   $id = (int)($_POST['id'] ?? 0);
+  $kode = trim($_POST['kode'] ?? '');
+  $tipe = trim($_POST['tipe'] ?? '');
   $name = trim($_POST['name'] ?? '');
   $detail = trim($_POST['detail'] ?? '');
+  $sn = trim($_POST['sn'] ?? '');
+  $tahun = trim($_POST['tahun'] ?? '');
+  $kondisi = trim($_POST['kondisi'] ?? '');
+  $lokasi = trim($_POST['lokasi'] ?? '');
   if ($id <= 0 || $name === '') {
     echo json_encode(['success' => false, 'msg' => 'Invalid input']);
     if (!defined('UNIT_TESTING')) exit;
   }
-  $stmt = $conn->prepare('UPDATE inf_ti_items SET name = ?, detail = ? WHERE id = ?');
-  $stmt->bind_param('ssi', $name, $detail, $id);
+  // validate tipe for edit
+  if (!empty($tipe)) {
+    $allowed = $allowedTipes[$_POST['category'] ?? ''] ?? ($allowedTipes[$category] ?? []);
+    if (!in_array($tipe, $allowed)) { echo json_encode(['success' => false, 'msg' => 'Invalid tipe for category']); if (!defined('UNIT_TESTING')) exit; }
+  }
+  // check duplicate kode for another record
+  if ($kode !== '') {
+    $stmtChk = $conn->prepare('SELECT id FROM inf_ti_items WHERE kode = ? LIMIT 1');
+    $stmtChk->bind_param('s', $kode);
+    $stmtChk->execute();
+    $resChk = $stmtChk->get_result();
+    $rChk = $resChk->fetch_assoc();
+    $stmtChk->close();
+    if ($rChk && (int)$rChk['id'] !== $id) { echo json_encode(['success' => false, 'msg' => 'Kode already exists']); if (!defined('UNIT_TESTING')) exit; }
+  }
+  $stmt = $conn->prepare('UPDATE inf_ti_items SET kode = ?, tipe = ?, name = ?, detail = ?, sn = ?, tahun = ?, kondisi = ?, lokasi = ? WHERE id = ?');
+  $stmt->bind_param('ssssssssi', $kode, $tipe, $name, $detail, $sn, $tahun, $kondisi, $lokasi, $id);
   $ok = $stmt->execute();
+  if (!$ok) {
+    if ($conn->errno == 1062) { echo json_encode(['success' => false, 'msg' => 'Kode already exists']); if (!defined('UNIT_TESTING')) exit; }
+  }
   $stmt->close();
   echo json_encode(['success' => (bool)$ok]);
-  if (!defined('UNIT_TESTING')) exit; 
+  if (!defined('UNIT_TESTING')) exit;
 }
 
 if ($action === 'delete') {
@@ -160,7 +245,7 @@ if ($action === 'delete') {
 if ($action === 'export') {
   $ids = $_GET['ids'] ?? null; // comma-separated or absent for all
   $cat = $_GET['category'] ?? null;
-  $query = 'SELECT id, category, name, detail, created_at, updated_at FROM inf_ti_items';
+  $query = 'SELECT id, kode, category, tipe, name, detail, sn, tahun, kondisi, lokasi, created_at, updated_at FROM inf_ti_items';
   $conds = [];
   if ($ids) {
     $allowed = array_filter(array_map('intval', explode(',', $ids)));
@@ -176,7 +261,7 @@ if ($action === 'export') {
   while ($r = $res->fetch_assoc()) $rows[] = $r;
   // build CSV with selected columns
   $colsParam = $_GET['cols'] ?? $_GET['columns'] ?? null;
-  $allowedCols = ['id','category','name','detail','created_at','updated_at'];
+  $allowedCols = ['id','kode','category','tipe','name','detail','sn','tahun','kondisi','lokasi','created_at','updated_at'];
   if ($colsParam) {
     $cols = array_filter(array_map('trim', explode(',', $colsParam)));
     $cols = array_values(array_intersect($allowedCols, $cols));

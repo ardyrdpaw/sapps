@@ -66,8 +66,31 @@ main{padding-top:24px}
 .card.rounded-lg{border-radius:14px}
 .btn-pill{border-radius:28px}
 
-/* Admin: hide footer clock format controls (toggleable) */
-#clockControls{display:none !important}
+/* Admin: show footer clock format controls (toggleable) */
+#clockControls{display:block !important}
+
+/* Ensure clock format select is visible and readable */
+#clockFormatSelect{min-width:260px; max-width:520px; width:100%;}
+#clockFormatSelectedPreview{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:520px;}
+
+/* Activities table scroll wrapper to avoid scrollbar overlap */
+.activity-table-wrapper { max-height: 260px; overflow-y: auto; padding-right: 12px; scrollbar-gutter: stable; }
+.activity-table-wrapper table { margin-bottom: 0; }
+/* Webkit scrollbar styling for a more visible track and thumb */
+.activity-table-wrapper::-webkit-scrollbar { width: 12px; }
+.activity-table-wrapper::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); }
+.activity-table-wrapper::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 6px; }
+
+/* Make the Activity tab/title more noticeable */
+#activityTabs .nav-link { font-size: 0.95rem; padding: 0.5rem 0.9rem; }
+#activityTabs .nav-link.active { background: var(--primary) !important; color: #fff !important; font-weight: 700; font-size: 1.05rem; border-color: var(--primary) !important; border-bottom-color: transparent; }
+#activityTabs .nav-link.active:focus, #activityTabs .nav-link.active:hover { color: #fff !important; }
+
+/* Slightly increase header prominence for the card title */
+.card .card-header { font-size: 1.05rem; font-weight: 700; color: var(--primary-dark); }
+
+/* Clock control visual tweaks */
+#clockControls { padding: 0.5rem 0; }
 
 /* Theme: dark mode */
 body.theme-dark{background:#0b0e12; color:#e6eef6}

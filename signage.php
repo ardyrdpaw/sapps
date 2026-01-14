@@ -18,6 +18,7 @@
                 <li class="nav-item" role="presentation"><button class="nav-link active" data-actcat="Kegiatan" type="button">Kegiatan</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" data-actcat="Agenda" type="button">Agenda</button></li>
             </ul>
+            <div class="activity-table-wrapper">
             <table class="table table-bordered" id="activitiesTable">
                 <thead>
                     <tr>
@@ -36,6 +37,7 @@
                     <!-- Data will be loaded here -->
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
     
@@ -47,6 +49,7 @@
                 <label class="col-auto col-form-label">Footer Clock Format</label>
                 <div class="col-auto">
                     <select id="clockFormatSelect" class="form-select"></select>
+                    <div id="clockFormatSelectedPreview" class="form-text text-muted mt-1"></div>
                 </div>
                 <div class="col-auto">
                     <button id="saveClockFormat" class="btn btn-primary">Save</button>
@@ -93,6 +96,23 @@
                 <button class="btn btn-success" id="addSignageBtn">Add Item</button>
                 <a class="btn btn-outline-primary ms-2" id="previewSignageBtn" href="saview.php" target="_blank" rel="noopener noreferrer" title="Open signage viewer in a new tab"><i class="bi bi-eye"></i> Preview</a>
             </div>
+
+            <!-- Templates -->
+            <div class="mb-3 card p-3">
+              <div class="d-flex align-items-center mb-2">
+                <h6 class="mb-0 me-3">Templates</h6>
+                <div class="btn-group me-2" role="group">
+                  <button class="btn btn-outline-secondary" id="saveAsTemplate1">Save current as Template_1</button>
+                  <button class="btn btn-outline-secondary" id="saveAsTemplate2">Save current as Template_2</button>
+                </div>
+                <div class="input-group" style="max-width:360px;">
+                  <select id="templateSelect" class="form-select"></select>
+                  <button class="btn btn-primary" id="applyTemplate">Apply</button>
+                </div>
+              </div>
+              <div id="templateList" class="small text-muted">No templates</div>
+            </div>
+
             <!-- Category Tabs -->
             <ul class="nav nav-tabs mb-3" id="signageTabs" role="tablist">
                 <li class="nav-item" role="presentation"><button class="nav-link active" data-cat="Video" type="button">Video</button></li>
@@ -379,24 +399,104 @@
             renderTabs();
             renderSignageTableForCategory(cat);
         });
-        // load clock format
-        function loadClockFormat() {
-            $.getJSON('php/signage_api.php?action=get_clock_format', function(resp) {
-                if (!resp) return;
-                $('#clockFormatSelect').empty();
-                if (Array.isArray(resp.formats)) {
-                    resp.formats.forEach(function(f) {
-                        var key = f.key || ('k_'+Date.now());
-                        var opt = $('<option>').val(key).text(f.label);
-                        $('#clockFormatSelect').append(opt);
-                    });
-                    // render preview table
-                    renderFormatsPreview(resp.formats);
-                }
-                if (resp.selected) $('#clockFormatSelect').val(resp.selected);
+
+        // Templates: load, save, apply, delete
+        function loadTemplates() {
+            $.getJSON('php/signage_api.php?action=list_templates', function(resp){
+                if (!resp || !resp.templates) return;
+                var templates = resp.templates;
+                $('#templateSelect').empty();
+                var listHtml = '';
+                templates.forEach(function(t){
+                    $('#templateSelect').append($('<option>').val(t.id).text(t.name + ' (' + t.created_at + ')'));
+                    listHtml += '<div class="d-flex justify-content-between align-items-center py-1">' +
+                                '<div>' + $('<div>').text(t.name).html() + ' <small class="text-muted">' + t.created_at + '</small></div>' +
+                                '<div><button class="btn btn-sm btn-primary me-1 apply-template" data-id="'+t.id+'">Apply</button> <button class="btn btn-sm btn-danger delete-template" data-id="'+t.id+'">Delete</button></div>' +
+                                '</div>';
+                });
+                $('#templateList').html(templates.length ? listHtml : 'No templates');
             });
         }
+
+        $('#saveAsTemplate1').on('click', function(){
+            $.post('php/signage_api.php?action=save_template', {name: 'Template_1'}, function(r){ if (r && r.success) { showCrudAlert('Saved as Template_1','success'); loadTemplates(); } else showCrudAlert('Save failed','danger'); }, 'json');
+        });
+        $('#saveAsTemplate2').on('click', function(){
+            $.post('php/signage_api.php?action=save_template', {name: 'Template_2'}, function(r){ if (r && r.success) { showCrudAlert('Saved as Template_2','success'); loadTemplates(); } else showCrudAlert('Save failed','danger'); }, 'json');
+        });
+
+        // Apply from select
+        $('#applyTemplate').on('click', function(){
+            var id = $('#templateSelect').val();
+            if (!id) { showCrudAlert('No template selected','warning'); return; }
+            if (!confirm('Apply selected template? This will replace current signage items.')) return;
+            $.post('php/signage_api.php?action=apply_template', {id: id}, function(r){ if (r && r.success) { showCrudAlert('Template applied','success'); loadSignage(); } else showCrudAlert(r.msg || 'Apply failed','danger'); }, 'json');
+        });
+
+        // Delegate apply/delete buttons in list
+        $(document).on('click', '.apply-template', function(){
+            var id = $(this).data('id');
+            if (!confirm('Apply this template? This will replace current signage items.')) return;
+            $.post('php/signage_api.php?action=apply_template', {id: id}, function(r){ if (r && r.success) { showCrudAlert('Template applied','success'); loadSignage(); } else showCrudAlert(r.msg || 'Apply failed','danger'); }, 'json');
+        });
+        $(document).on('click', '.delete-template', function(){
+            var id = $(this).data('id');
+            if (!confirm('Delete this template?')) return;
+            $.post('php/signage_api.php?action=delete_template', {id: id}, function(r){ if (r && r.success) { showCrudAlert('Template deleted','success'); loadTemplates(); } else showCrudAlert(r.msg || 'Delete failed','danger'); }, 'json');
+        });
+
+        loadTemplates();
+
+        // load clock format and populate dropdown with inline preview timestamps (truncated option text & helper preview)
+        function loadClockFormat() {
+            // show placeholder while loading
+            $('#clockFormatSelect').empty().append($('<option>').val('').text('Loading formats...').prop('disabled', true));
+            $.getJSON('php/signage_api.php?action=get_clock_format', function(resp) {
+                console.log('get_clock_format response:', resp);
+                $('#clockFormatSelect').empty();
+                const trunc = function(s, n){ return (s || '').length>n ? (s || '').slice(0,n-1)+'…' : (s || ''); };
+                if (!resp || !Array.isArray(resp.formats) || resp.formats.length === 0) {
+                    $('#clockFormatSelect').append($('<option>').val('').text('No formats available').prop('disabled', true));
+                    $('#clockFormatSelectedPreview').text('No clock formats found.');
+                    return;
+                }
+                resp.formats.forEach(function(f, idx) {
+                    var key = f.key || ('k_'+Date.now() + '_' + idx);
+                    var fullLabel = f.label || '';
+                    var displayLabel = trunc(fullLabel, 40) + ' — Loading...';
+                    var opt = $('<option>').val(key).text(displayLabel).attr('title', fullLabel);
+                    $('#clockFormatSelect').append(opt);
+                    // fetch preview time and update option label and data-preview/title
+                    $.getJSON('php/signage_api.php?action=get_server_time&format=' + encodeURIComponent(key), function(r){
+                        var preview = (r && r.time) ? r.time : 'N/A';
+                        var text = trunc(fullLabel, 40) + ' — ' + preview;
+                        opt.text(text).attr('title', fullLabel + ' — ' + preview).data('preview', preview).data('fulllabel', fullLabel);
+                        // if this option is currently selected, update helper preview
+                        if ($('#clockFormatSelect').val() === key) updateClockPreview(opt);
+                    }).fail(function(){
+                        opt.text(trunc(fullLabel, 40) + ' — N/A').attr('title', fullLabel + ' — N/A').data('preview','N/A').data('fulllabel', fullLabel);
+                    });
+                });
+                if (resp.selected) $('#clockFormatSelect').val(resp.selected);
+                // update preview for selected after options added
+                setTimeout(function(){
+                    var sel = $('#clockFormatSelect option:selected');
+                    if (sel.length) updateClockPreview(sel);
+                }, 250);
+            }).fail(function(jqxhr, status, err){
+                console.error('Failed to load clock formats:', status, err, jqxhr.responseText);
+                $('#clockFormatSelect').empty().append($('<option>').val('').text('Unable to load formats (check console)').prop('disabled', true));
+                $('#clockFormatSelectedPreview').text('Unable to load preview.');
+            });
+        }
+        function updateClockPreview(opt) {
+            var full = opt.data('fulllabel') || opt.text().split(' — ')[0] || opt.text();
+            var preview = opt.data('preview') || (opt.text().split(' — ')[1] || '');
+            $('#clockFormatSelectedPreview').text((full ? full + ' — ' : '') + (preview || ''));
+        }
+        $('#clockFormatSelect').on('change', function(){ updateClockPreview($('#clockFormatSelect option:selected')); });
         loadClockFormat();
+
 
         $('#saveClockFormat').click(function(){
             var fmt = $('#clockFormatSelect').val();
@@ -406,33 +506,7 @@
             }, 'json');
         });
 
-        // render preview table for formats
-        function renderFormatsPreview(formats) {
-            $('#clockFormatsPreview').remove();
-            var tbl = $('<table id="clockFormatsPreview" class="table table-sm">');
-            tbl.append('<thead><tr><th>Label</th><th>Preview</th><th></th></tr></thead>');
-            var body = $('<tbody>');
-            formats.forEach(function(f){
-                var key = f.key || ('k_'+Date.now());
-                var row = $('<tr>');
-                row.append($('<td>').text(f.label));
-                var previewCell = $('<td>').text('Loading...');
-                row.append(previewCell);
-                var btn = $('<button class="btn btn-sm btn-outline-primary">Select</button>');
-                btn.on('click', function(){
-                    $('#clockFormatSelect').val(key);
-                    $('#saveClockFormat').click();
-                });
-                row.append($('<td>').append(btn));
-                body.append(row);
-                // fetch preview from server
-                $.getJSON('php/signage_api.php?action=get_server_time&format=' + encodeURIComponent(key), function(r){
-                    if (r && r.time) previewCell.text(r.time);
-                }).fail(function(){ previewCell.text('N/A'); });
-            });
-            tbl.append(body);
-            $('.card-body').first().append(tbl);
-        }
+
 
         // Add custom format
         $('#addCustomFormat').click(function(e){
