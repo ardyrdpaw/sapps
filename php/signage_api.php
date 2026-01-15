@@ -140,6 +140,55 @@ switch ($action) {
         $conn->query("DELETE FROM signage_templates WHERE id=$id");
         echo json_encode(['success'=>true]);
         break;
+    case 'get_background':
+        // Get background color, image URL, and fit option from signage_items
+        $res = $conn->query("SELECT content FROM signage_items WHERE name='SaviewBackground' LIMIT 1");
+        $defaultBg = ['color' => '#ffffff', 'image' => '', 'fit' => 'cover'];
+        if ($res && $row = $res->fetch_assoc()) {
+            $decoded = json_decode($row['content'], true);
+            if (is_array($decoded)) {
+                $defaultBg = $decoded;
+            }
+        }
+        echo json_encode(['success' => true, 'bg' => $defaultBg]);
+        break;
+    case 'set_background':
+        // Save background color, fit option, and/or image
+        $color = $conn->real_escape_string($_POST['color'] ?? '#ffffff');
+        $fit = $conn->real_escape_string($_POST['fit'] ?? 'cover');
+        $image = '';
+        
+        // Handle image upload
+        if (!empty($_FILES['image']['name'])) {
+            $uploadDir = '../assets/uploads/';
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+            
+            $file = $_FILES['image'];
+            $fileName = 'bg_' . time() . '_' . basename($file['name']);
+            $filePath = $uploadDir . $fileName;
+            
+            if (move_uploaded_file($file['tmp_name'], $filePath)) {
+                $image = 'assets/uploads/' . $fileName;
+            }
+        }
+        
+        // Handle clear image flag
+        if (isset($_POST['clear_image']) && $_POST['clear_image'] == 1) {
+            $image = '';
+        }
+        
+        $bgData = ['color' => $color, 'image' => $image, 'fit' => $fit];
+        $json = $conn->real_escape_string(json_encode($bgData));
+        
+        // Check if background setting exists
+        $res = $conn->query("SELECT id FROM signage_items WHERE name='SaviewBackground' LIMIT 1");
+        if ($res && $res->num_rows > 0) {
+            $conn->query("UPDATE signage_items SET content='$json', type='Setting' WHERE name='SaviewBackground'");
+        } else {
+            $conn->query("INSERT INTO signage_items (name, content, type) VALUES ('SaviewBackground', '$json', 'Setting')");
+        }
+        echo json_encode(['success' => true]);
+        break;
     case 'get':
         $id = intval($_GET['id'] ?? 0);
         $result = $conn->query("SELECT id, name, content, type, category, autoplay, `loop`, muted, sort_order FROM signage_items WHERE id=$id");
@@ -416,6 +465,28 @@ switch ($action) {
             }
         }
         echo json_encode(['success' => true, 'activities' => $items]);
+        break;
+    case 'get_activities':
+        // Fetch activities for scrolling display, optionally filtered by category
+        $category = $conn->real_escape_string($_GET['category'] ?? 'Kegiatan');
+        
+        // Get current month and year, or from request
+        $tahun = intval($_GET['tahun'] ?? date('Y'));
+        $bulan = $_GET['bulan'] ?? strtoupper(strftime('%B', strtotime('now')));
+        
+        $query = "SELECT id, no, kegiatan, tempat, waktu, status FROM activities 
+                  WHERE category='$category' AND tahun=$tahun AND bulan='$bulan' 
+                  ORDER BY no ASC";
+        $result = $conn->query($query);
+        
+        $activities = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $activities[] = $row;
+            }
+        }
+        
+        echo json_encode(['success' => true, 'activities' => $activities]);
         break;
     case 'get_activity':
         $id = intval($_GET['id'] ?? 0);

@@ -113,6 +113,37 @@
               <div id="templateList" class="small text-muted">No templates</div>
             </div>
 
+            <!-- Background Settings -->
+            <div class="mb-3 card p-3">
+              <h6 class="mb-3">Background Settings (Saview)</h6>
+              <div class="row align-items-end">
+                <div class="col-md-2">
+                  <label class="form-label">Fit</label>
+                  <select id="bgFit" class="form-select">
+                    <option value="cover">Stretch (cover)</option>
+                    <option value="contain">Fit (contain)</option>
+                    <option value="repeat">Tile</option>
+                    <option value="auto">Center</option>
+                    <option value="100% 100%">Span</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Background Color</label>
+                  <input type="color" id="bgColor" class="form-control form-control-color" value="#ffffff">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Background Image</label>
+                  <input type="file" id="bgImage" class="form-control" accept="image/*">
+                  <small class="text-muted">Leave empty to use color only</small>
+                </div>
+                <div class="col-md-4">
+                  <button id="saveBgSettings" class="btn btn-primary">Save Background</button>
+                  <button id="clearBgImage" class="btn btn-outline-secondary">Clear Image</button>
+                </div>
+              </div>
+              <div id="bgPreview" class="mt-2 p-2 border rounded" style="height: 80px; background: #ffffff; background-size: cover; background-position: center;"></div>
+            </div>
+
             <!-- Category Tabs -->
             <ul class="nav nav-tabs mb-3" id="signageTabs" role="tablist">
                 <li class="nav-item" role="presentation"><button class="nav-link active" data-cat="Video" type="button">Video</button></li>
@@ -526,6 +557,87 @@
                     $('#customFormatLabel').val(''); $('#customFormatPattern').val('');
                 }, 'json');
             });
+        });
+        
+        // Load and manage background settings
+        function loadBgSettings() {
+            $.getJSON('php/signage_api.php?action=get_background', function(resp) {
+                console.log('loadBgSettings response:', resp);
+                if (resp && resp.success && resp.bg) {
+                    $('#bgColor').val(resp.bg.color || '#ffffff');
+                    $('#bgFit').val(resp.bg.fit || 'cover');
+                    console.log('Loaded bg color:', resp.bg.color, 'fit:', resp.bg.fit, 'image:', resp.bg.image);
+                    updateBgPreview();
+                }
+            }).fail(function(jqxhr, status, err){
+                console.error('Failed to load background settings:', status, err, jqxhr.responseText);
+            });
+        }
+        loadBgSettings();
+        
+        function updateBgPreview() {
+            var color = $('#bgColor').val();
+            var fit = $('#bgFit').val();
+            var bgStyle = 'background-color: ' + color + '; background-size: ' + fit + '; background-repeat: ' + (fit === 'repeat' ? 'repeat' : 'no-repeat') + '; background-position: center;';
+            $('#bgPreview').attr('style', 'height: 80px; ' + bgStyle + ' border: 1px solid #ddd; border-radius: 4px;');
+        }
+        
+        $('#bgColor').on('change', updateBgPreview);
+        $('#bgFit').on('change', updateBgPreview);
+        $('#bgImage').on('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var fit = $('#bgFit').val();
+                    var bgStyle = 'background-color: ' + $('#bgColor').val() + '; background-image: url(' + e.target.result + '); background-size: ' + fit + '; background-repeat: ' + (fit === 'repeat' ? 'repeat' : 'no-repeat') + '; background-position: center;';
+                    $('#bgPreview').attr('style', 'height: 80px; ' + bgStyle + ' border: 1px solid #ddd; border-radius: 4px;');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        $('#saveBgSettings').click(function() {
+            var formData = new FormData();
+            formData.append('color', $('#bgColor').val());
+            formData.append('fit', $('#bgFit').val());
+            if ($('#bgImage')[0].files.length > 0) {
+                formData.append('image', $('#bgImage')[0].files[0]);
+            }
+            console.log('Saving background color:', $('#bgColor').val(), 'fit:', $('#bgFit').val(), 'has image:', $('#bgImage')[0].files.length > 0);
+            $.ajax({
+                url: 'php/signage_api.php?action=set_background',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(r) {
+                    console.log('set_background response:', r);
+                    if (r && r.success) {
+                        showCrudAlert('Background saved.', 'success');
+                        $('#bgImage').val('');
+                        loadBgSettings();
+                    } else {
+                        showCrudAlert('Failed to save background: ' + (r.error || 'unknown error'), 'danger');
+                    }
+                },
+                error: function(jqxhr, status, err) {
+                    console.error('AJAX error:', status, err, jqxhr.responseText);
+                    showCrudAlert('Error saving background: ' + status, 'danger');
+                }
+            });
+        });
+        
+        $('#clearBgImage').click(function() {
+            $.post('php/signage_api.php?action=set_background', {clear_image: 1}, function(r) {
+                if (r && r.success) {
+                    showCrudAlert('Background image cleared.', 'success');
+                    $('#bgImage').val('');
+                    loadBgSettings();
+                } else {
+                    showCrudAlert('Failed to clear image.', 'danger');
+                }
+            }, 'json');
         });
         
         // Load slideshow settings

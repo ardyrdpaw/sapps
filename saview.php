@@ -27,26 +27,31 @@ html, body { height: 100%; margin: 0; padding: 0; overflow-x: hidden; }
 .signage-header-clock { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.75rem; color: #fff; }
 .signage-header-clock svg { width: 24px; height: 24px; fill: #fff; }
 .signage-logo { max-height: 75px; max-width: 160px; object-fit: contain; }
-.signage-banner { background: #d48422; color: #111; min-height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-.signage-footer { background: #2ca3a3; color: #111; min-height: 40px; display: flex; align-items: center; justify-content: center; }
-.signage-main { background: #4a90e2; min-height: 400px; display: flex; align-items: center; justify-content: center; color: #111; font-size: 2rem; }
-.signage-side { background: #17989e; min-height: 400px; }
-.signage-table { background: #17989e; margin-bottom: 20px; }
+.signage-footerlink { max-height: 40px; max-width: 100%; object-fit: contain; }
+.signage-banner { background: #027f83; color: #111; min-height: 30px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.signage-footer {  color: #111; min-height: 30px; display: flex; align-items: center; justify-content: center; }
+.signage-main { min-height: 400px; display: flex; align-items: center; justify-content: center; color: #111; font-size: 2rem; }
+.signage-side {  min-height: 400px; }
+.signage-table {  margin-bottom: 20px; }
 .activity-table { background: #fff; border-radius: 4px; font-size: 0.85rem; }
 .activity-table thead { background: #0d6efd; color: #fff; }
 .activity-table thead th { padding: 6px 4px; border: none; font-weight: 600; }
 .activity-table tbody td { padding: 6px 4px; border-color: #dee2e6; }
 .activity-table .badge { font-size: 0.7rem; padding: 3px 6px; }  /* Activity wrapper to contain scrollbar and avoid overlap; titles and headers are sticky */
-  .activity-table-wrapper { max-height: 200px; overflow-y: auto; padding-right: 10px; scrollbar-gutter: stable; position: relative; }
-  .activity-table-wrapper table { margin-bottom: 0; }
-  .activity-table-wrapper::-webkit-scrollbar { width: 10px; }
-  .activity-table-wrapper::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); }
-  .activity-table-wrapper::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 6px; }
+  .activity-table-wrapper { max-height: 300px; overflow: hidden; padding-right: 0; position: relative; }
+  .activity-table-wrapper table { margin-bottom: 0; width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .activity-table-wrapper tbody { animation: scrollRows 30s linear infinite; display: table-row-group; width: 100%; }
+  .activity-table-wrapper tbody tr { height: 34px; }
+  .activity-table-wrapper tbody td { padding: 6px 4px; }
+  @keyframes scrollRows {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-100%); }
+  }
   /* Make activity title sticky and centered */
   .activity-title { position: sticky; top: 0; z-index: 3; background: #fff; color: #0d6efd; padding: 8px 0; margin: 0; font-weight: 700; font-size: 1.05rem; text-align: center; }
   /* Sticky table header positioned below the title */
   .activity-table-wrapper .activity-table thead th { position: sticky; top: 44px; z-index: 2; background: #0d6efd; color: #fff; }
-  .activity-table-wrapper .activity-table thead th { padding-top: 6px; padding-bottom: 6px; }.signage-gallery { background: #17989e; }
+  .activity-table-wrapper .activity-table thead th { padding-top: 6px; padding-bottom: 6px; }
 .signage-gallery-img { background: transparent; min-height: 170px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #fff; overflow: hidden; position: relative; }
 .signage-gallery-img img { width: 100%; height: 100%; object-fit: contain; }
 .signage-slideshow { position: relative; }
@@ -67,6 +72,24 @@ $kegiatanActivities = [];
 $agendaActivities = [];
 
 $conn = new mysqli('127.0.0.1', 'root', '', 'sapps');
+
+// Get background settings
+$bgColor = '#ffffff';
+$bgImage = '';
+$bgFit = 'cover';
+$bgResult = $conn->query("SELECT content FROM signage_items WHERE name='SaviewBackground' LIMIT 1");
+if ($bgResult && $row = $bgResult->fetch_assoc()) {
+  $bgData = json_decode($row['content'], true);
+  if (is_array($bgData)) {
+    $bgColor = $bgData['color'] ?? '#ffffff';
+    $bgImage = $bgData['image'] ?? '';
+    $bgFit = $bgData['fit'] ?? 'cover';
+  }
+}
+$bgStyle = 'background-color: ' . htmlspecialchars($bgColor) . ';';
+if (!empty($bgImage)) {
+  $bgStyle .= ' background-image: url(' . htmlspecialchars($bgImage) . '); background-size: ' . htmlspecialchars($bgFit) . '; background-repeat: ' . ($bgFit === 'repeat' ? 'repeat' : 'no-repeat') . '; background-position: center;';
+}
 
 // Get activities for current month and year
 $currentYear = date('Y');
@@ -220,7 +243,7 @@ if (class_exists('IntlDateFormatter')) {
   }
 }
 ?>
-<div class="container-fluid p-0 signage-container">
+<div class="container-fluid p-0 signage-container" style="<?= $bgStyle ?>">
   <!-- Header with Logo, Welcome 1, and Clock -->
   <div class="row g-0">
     <div class="col-12 signage-header">
@@ -307,8 +330,7 @@ if (class_exists('IntlDateFormatter')) {
       </div>
       <div class="row signage-gallery">
         <div class="col-6">
-          <div class="fw-bold text-center mb-2">Galeri 1</div>
-          <div class="signage-gallery-img signage-slideshow" id="slideshow1">
+                    <div class="signage-gallery-img signage-slideshow" id="slideshow1">
             <?php 
             $gallery1Images = isset($galleryImages['Galeri 1']) ? $galleryImages['Galeri 1'] : [];
             if (count($gallery1Images) > 0): ?>
@@ -321,7 +343,6 @@ if (class_exists('IntlDateFormatter')) {
           </div>
         </div>
         <div class="col-6">
-          <div class="fw-bold text-center mb-2">Galeri 2</div>
           <div class="signage-gallery-img signage-slideshow" id="slideshow2">
             <?php 
             $gallery2Images = isset($galleryImages['Galeri 2']) ? $galleryImages['Galeri 2'] : [];
@@ -339,7 +360,11 @@ if (class_exists('IntlDateFormatter')) {
   </div>
   <div class="row g-0">
     <div class="col-12 signage-banner">
-      <b><?= isset($signage['Welcome 2']) ? $signage['Welcome 2']['content'] : 'Welcome 2' ?></b>
+       <?php if (isset($signage['Footer Link']) && $signage['Footer Link']['type'] === 'Images' && !empty($signage['Footer Link']['content'])): ?>
+          <img class="signage-footerlink" src="<?= htmlspecialchars($signage['Footer Link']['content']) ?>" alt="Footer Link">
+        <?php else: ?>
+          <span class="signage-noimg">Footer Link</span>
+        <?php endif; ?>
     </div>
   </div>
   <div class="row g-0">
@@ -516,43 +541,59 @@ if (class_exists('IntlDateFormatter')) {
 </body>
 <script>
 $(function() {
-  // DataTables for both tables, auto-number No column
-  $("#kegiatanTable, #agendaTable").DataTable({
-    paging: false,
-    searching: false,
-    info: false,
-    ordering: false, // disable all sorting
-    responsive: true,
-    language: {
-      emptyTable: "Tidak ada data",
-      zeroRecords: "Tidak ditemukan",
-      info: "",
-      infoEmpty: "",
-      infoFiltered: "",
-    },
-    columnDefs: [
-      { targets: 0, width: "30px" },
-      { targets: '_all', orderable: false }
-    ],
-    drawCallback: function(settings) {
-      var api = this.api();
-      var rowCount = api.rows({page:'current'}).count();
-      var minRows = 6;
-      if(rowCount < minRows) {
-        var colCount = api.columns().count();
-        for(var i=rowCount; i<minRows; i++) {
-          var emptyCells = '';
-          for(var j=0;j<colCount;j++) emptyCells += '<td>&nbsp;</td>';
-          $(api.table().body()).append('<tr class="dt-empty-row">'+emptyCells+'</tr>');
-        }
-      }
-      $(api.table().container()).find('table').addClass('table-striped table-hover align-middle');
-    },
-    rowCallback: function(row, data, index) {
-      // Set No column to row number (1-based)
-      $('td:eq(0)', row).html(index + 1);
-    }
-  });
+  // Disable DataTables for scrolling animation, manage tables manually
+  
+  // Function to load activity data and set up scrolling animation
+  function setupActivityScroll(tableId, category) {
+    // Fetch latest data from server
+    $.getJSON('php/signage_api.php?action=get_activities', {category: category}, function(data) {
+      if (!data || !data.activities) return;
+      
+      var tbody = $('#' + tableId + ' tbody');
+      tbody.empty();
+      
+      // Append all rows twice to create seamless loop
+      var rows = data.activities;
+      rows.forEach(function(activity, idx) {
+        var status_class = activity.status === 'Selesai' ? 'success' : (activity.status === 'Berlangsung' ? 'warning' : 'info');
+        var row = $('<tr>')
+          .append($('<td>').html((idx + 1)))
+          .append($('<td>').text(activity.kegiatan))
+          .append($('<td>').text(activity.tempat))
+          .append($('<td>').text(activity.waktu))
+          .append($('<td>').append($('<span class="badge">').addClass('bg-' + status_class).text(activity.status)));
+        tbody.append(row);
+      });
+      
+      // Duplicate rows for seamless loop
+      rows.forEach(function(activity, idx) {
+        var status_class = activity.status === 'Selesai' ? 'success' : (activity.status === 'Berlangsung' ? 'warning' : 'info');
+        var row = $('<tr>')
+          .append($('<td>').html((idx + 1)))
+          .append($('<td>').text(activity.kegiatan))
+          .append($('<td>').text(activity.tempat))
+          .append($('<td>').text(activity.waktu))
+          .append($('<td>').append($('<span class="badge">').addClass('bg-' + status_class).text(activity.status)));
+        tbody.append(row);
+      });
+      
+      // Reset animation
+      tbody.css('animation', 'none');
+      setTimeout(function() {
+        tbody.css('animation', 'scrollRows 30s linear infinite');
+      }, 10);
+    });
+  }
+  
+  // Initial setup
+  setupActivityScroll('kegiatanTable', 'Kegiatan');
+  setupActivityScroll('agendaTable', 'Agenda');
+  
+  // Refresh data every 10 minutes (600000 ms)
+  setInterval(function() {
+    setupActivityScroll('kegiatanTable', 'Kegiatan');
+    setupActivityScroll('agendaTable', 'Agenda');
+  }, 600000);
 });
 </script>
 </html>
